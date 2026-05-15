@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    颜色资源文件
+    定义应用中使用的颜色
+    可以在代码中通过 R.color.xxx 引用
+-->
+<resources>
+    <!-- 主题色：主色 -->
+    <color name="primary">#FF6750A4</color>
+    <!-- 主题色：容器色 -->
+    <color name="primary_container">#FFEADDFF</color>
+    <!-- 错误色 -->
+    <color name="error">#FFB3261E</color>
+</resources>

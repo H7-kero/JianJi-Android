@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 应用清单文件
+    作用：声明应用的组件、权限、配置等信息
+    是 Android 系统识别应用的关键文件
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        application 标签：声明应用的全局属性
+        android:name: 应用入口类（必须继承 Application）
+        android:label: 应用名称（显示在桌面和设置中）
+        android:theme: 应用主题
+    -->
+    <application
+        android:name=".JianJiApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="简记"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+        <!--
+            MainActivity 声明
+            android:exported="true": 允许外部应用启动（桌面图标需要）
+            intent-filter: 声明这是应用的入口 Activity
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+            <intent-filter>
+                <!-- MAIN 动作表示这是主入口 -->
+                <action android:name="android.intent.action.MAIN" />
+                <!-- LAUNCHER 类别表示在桌面显示图标 -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
