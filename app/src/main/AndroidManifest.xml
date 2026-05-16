@@ -1,29 +1,20 @@
-&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;!--
-    Android 应用清单文件
-    作用：声明应用的组件、权限、配置等信息
-    是 Android 系统识别应用的关键文件
---&gt;
-&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"&gt;
-
-    &lt;application
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
         android:name=".JianJiApplication"
         android:allowBackup="true"
         android:icon="@android:drawable/ic_menu_add"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"&gt;
-
-        &lt;activity
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"&gt;
-            &lt;intent-filter&gt;
-                &lt;action android:name="android.intent.action.MAIN" /&gt;
-                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
-            &lt;/intent-filter&gt;
-        &lt;/activity&gt;
-
-    &lt;/application&gt;
-
-&lt;/manifest&gt;
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
