@@ -1,0 +1,9 @@
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;!--
+    主题资源文件
+    定义应用的主题样式
+--&gt;
+&lt;resources&gt;
+    &lt;style name="Theme.AppCompat.Light.NoActionBar" parent="android:Theme.Material.Light.NoActionBar"&gt;
+    &lt;/style&gt;
+&lt;/resources&gt;
