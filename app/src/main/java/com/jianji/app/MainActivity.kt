@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -129,8 +130,8 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
                 // 标签
                 label = { Text(label) },
                 // 是否选中：当前页面是否匹配
-                selected = currentDestination?.hierarchy?.any { 
-                    it.route == screen.route 
+                selected = currentDestination?.hierarchy?.any {
+                    it.route == screen.route
                 } == true,
                 // 点击事件
                 onClick = {
