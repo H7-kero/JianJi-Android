@@ -17,8 +17,8 @@ android {
     // 应用命名空间，用于生成 R 类和 BuildConfig
     namespace = "com.jianji.app"
     
-    // 编译 SDK 版本
-    compileSdk = 34
+    // 编译 SDK 版本（Android 15）
+    compileSdk = 35
 
     defaultConfig {
         // 应用包名，唯一标识应用
@@ -28,7 +28,7 @@ android {
         minSdk = 29
         
         // 目标 Android 版本
-        targetSdk = 34
+        targetSdk = 35
         
         // 版本号，每次发布要递增
         versionCode = 1
@@ -72,7 +72,7 @@ android {
     // Compose 编译器选项
     composeOptions {
         // Compose 编译器版本，必须与 Kotlin 版本兼容
-        // Kotlin 1.9.24 -&gt; Compose Compiler 1.5.14
+        // Kotlin 1.9.24 -> Compose Compiler 1.5.14
         kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
@@ -142,7 +142,6 @@ dependencies {
     // Espresso UI 测试
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     // Compose UI 测试
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // Compose 调试工具
     debugImplementation("androidx.compose.ui:ui-tooling")
