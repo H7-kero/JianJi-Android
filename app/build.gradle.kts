@@ -17,8 +17,8 @@ android {
     // 应用命名空间，用于生成 R 类和 BuildConfig
     namespace = "com.jianji.app"
     
-    // 编译 SDK 版本（Android 15）
-    compileSdk = 35
+    // 编译 SDK 版本（Android 16）
+    compileSdk = 36
 
     defaultConfig {
         // 应用包名，唯一标识应用
@@ -27,8 +27,8 @@ android {
         // 最低支持的 Android 版本（Android 10）
         minSdk = 29
         
-        // 目标 Android 版本
-        targetSdk = 35
+        // 目标 Android 版本（Android 16）
+        targetSdk = 36
         
         // 版本号，每次发布要递增
         versionCode = 1

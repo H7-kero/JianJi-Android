@@ -21,8 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.Transaction
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * 首页界面
