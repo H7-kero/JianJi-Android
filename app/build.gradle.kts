@@ -1,8 +1,6 @@
-/**
- * App 模块构建配置文件
- */
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
@@ -13,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.jianji.app"
-        minSdk = 29
+        minSdk = 36
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
@@ -32,6 +30,10 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    kotlin {
+        jvmToolchain(21)
     }
 
     buildFeatures {
