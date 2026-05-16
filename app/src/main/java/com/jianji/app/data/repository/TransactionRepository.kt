@@ -17,6 +17,7 @@ package com.jianji.app.data.repository
 import com.jianji.app.data.local.TransactionDao
 import com.jianji.app.data.model.Transaction
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,21 +55,23 @@ class TransactionRepository @Inject constructor(
     }
 
     /**
-     * 获取今日总支出
+     * 获取今日支出
      * @return 今日支出金额的数据流
      */
     fun getTodayExpense(): Flow<Double> {
         val (startTime, endTime) = getTodayTimeRange()
         return transactionDao.getTotalExpense(startTime, endTime)
+            .map { it ?: 0.0 }
     }
 
     /**
-     * 获取今日总收入
+     * 获取今日收入
      * @return 今日收入金额的数据流
      */
     fun getTodayIncome(): Flow<Double> {
         val (startTime, endTime) = getTodayTimeRange()
         return transactionDao.getTotalIncome(startTime, endTime)
+            .map { it ?: 0.0 }
     }
 
     /**
@@ -80,6 +83,7 @@ class TransactionRepository @Inject constructor(
     fun getMonthlyExpense(year: Int, month: Int): Flow<Double> {
         val (startTime, endTime) = getMonthTimeRange(year, month)
         return transactionDao.getTotalExpense(startTime, endTime)
+            .map { it ?: 0.0 }
     }
 
     /**

@@ -85,31 +85,27 @@ interface TransactionDao {
     /**
      * 查询指定日期范围内的总支出
      * 
-     * COALESCE(SUM(amount), 0) 表示：
-     * - 如果没有记录，返回 0 而不是 null
-     * - SUM(amount) 计算金额总和
-     * 
      * type = 'expense' 只统计支出
      */
     @Query("""
-        SELECT COALESCE(SUM(amount), 0) 
+        SELECT SUM(amount) 
         FROM transactions 
         WHERE type = 'expense' 
         AND timestamp BETWEEN :startTime AND :endTime
     """)
-    fun getTotalExpense(startTime: Long, endTime: Long): Flow<Double>
+    fun getTotalExpense(startTime: Long, endTime: Long): Flow<Double?>
 
     /**
      * 查询指定日期范围内的总收入
      * type = 'income' 只统计收入
      */
     @Query("""
-        SELECT COALESCE(SUM(amount), 0) 
+        SELECT SUM(amount) 
         FROM transactions 
         WHERE type = 'income' 
         AND timestamp BETWEEN :startTime AND :endTime
     """)
-    fun getTotalIncome(startTime: Long, endTime: Long): Flow<Double>
+    fun getTotalIncome(startTime: Long, endTime: Long): Flow<Double?>
 
     /**
      * 按分类统计支出
