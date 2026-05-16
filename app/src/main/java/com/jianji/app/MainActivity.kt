@@ -10,6 +10,8 @@ package com.jianji.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -19,8 +21,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -130,8 +132,8 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
                 // 标签
                 label = { Text(label) },
                 // 是否选中：当前页面是否匹配
-                selected = currentDestination?.hierarchy?.any {
-                    it.route == screen.route
+                selected = currentDestination?.hierarchy?.any { 
+                    it.route == screen.route 
                 } == true,
                 // 点击事件
                 onClick = {
@@ -170,9 +172,9 @@ sealed class Screen(val route: String, val label: String) {
  */
 @Composable
 fun PlaceholderScreen(name: String) {
-    androidx.compose.foundation.layout.Box(
-        modifier = androidx.compose.foundation.layout.Modifier.fillMaxSize(),
-        contentAlignment = androidx.compose.ui.Alignment.Center
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
         Text(text = "$name 页面开发中...", fontSize = 18.sp)
     }
