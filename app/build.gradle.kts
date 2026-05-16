@@ -1,8 +1,9 @@
 plugins {
     id("com.android.application")
-    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
+
+apply(plugin = "com.google.dagger.hilt.android")
 
 android {
     namespace = "com.jianji.app"
