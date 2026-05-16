@@ -10,6 +10,7 @@
 package com.jianji.app.data.local
 
 import androidx.room.*
+import com.jianji.app.data.model.CategoryExpense
 import com.jianji.app.data.model.Transaction
 import kotlinx.coroutines.flow.Flow
 
@@ -125,5 +126,5 @@ interface TransactionDao {
     fun getExpenseByCategory(
         startTime: Long, 
         endTime: Long
-    ): Flow<Map<String, Double>>
+    ): Flow<List<CategoryExpense>>
 }
