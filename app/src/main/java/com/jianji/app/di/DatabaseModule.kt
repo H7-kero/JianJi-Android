@@ -45,7 +45,7 @@ object DatabaseModule {
             AppDatabase::class.java,  // 数据库类
             "jianji_database"         // 数据库文件名
         )
-        // .fallbackToDestructiveMigration() // 数据库版本升级时删除旧数据（开发时用）
+        .fallbackToDestructiveMigration() // 数据库版本升级时删除旧数据（开发时用）
         .build()
     }
 
