@@ -1,9 +1,9 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
-
-apply(plugin = "com.google.dagger.hilt.android")
 
 android {
     namespace = "com.jianji.app"
@@ -32,12 +32,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
+    kotlin {
+        jvmToolchain(21)
+    }
+
     buildFeatures {
         compose = true
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.6.1"
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
 }
 
@@ -58,12 +62,12 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
 
     implementation("com.google.dagger:hilt-android:2.51.1")
-    add("ksp", "com.google.dagger:hilt-compiler:2.51.1")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    add("ksp", "androidx.room:room-compiler:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
