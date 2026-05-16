@@ -9,8 +9,8 @@
  * - com.google.devtools.ksp: Kotlin 符号处理，用于 Room 编译时生成代码
  */
 plugins {
-    id("com.android.application") version "8.3.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
-    id("com.google.dagger.hilt.android") version "2.50" apply false
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20" apply false
+    id("com.android.application") version "9.2.1" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.20" apply false
+    id("com.google.dagger.hilt.android") version "2.51.1" apply false
+    id("com.google.devtools.ksp") version "2.0.20-1.0.22" apply false
 }

@@ -71,9 +71,8 @@ android {
     
     // Compose 编译器选项
     composeOptions {
-        // Compose 编译器版本，必须与 Kotlin 版本兼容
-        // Kotlin 1.9.24 -> Compose Compiler 1.5.14
-        kotlinCompilerExtensionVersion = "1.5.14"
+        // Compose 编译器版本，必须与 Kotlin 2.0.x 兼容
+        kotlinCompilerExtensionVersion = "1.6.1"
     }
 }
 
@@ -81,17 +80,17 @@ android {
 dependencies {
     // ===== 基础库 =====
     // Android 核心库
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.15.0")
     
     // 生命周期库，支持 ViewModel 和 LiveData
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     
     // Activity 的 Compose 支持
-    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.activity:activity-compose:1.9.2")
     
     // ===== Compose UI 库 =====
     // Compose BOM（Bill of Materials），统一管理 Compose 版本
-    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+    implementation(platform("androidx.compose:compose-bom:2024.10.00"))
     
     // Compose UI 核心
     implementation("androidx.compose.ui:ui")
@@ -105,20 +104,20 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     
     // Compose 导航
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.8.1")
     
     // ViewModel 的 Compose 支持
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     // 生命周期运行时 Compose 支持
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
     
     // ===== Hilt 依赖注入 =====
     // Hilt 核心库
-    implementation("com.google.dagger:hilt-android:2.50")
+    implementation("com.google.dagger:hilt-android:2.51.1")
     // Hilt 编译器（KSP 版本）
-    ksp("com.google.dagger:hilt-compiler:2.50")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
     // Hilt 导航 Compose 支持
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     
     // ===== Room 数据库 =====
     // Room 运行时
@@ -132,15 +131,15 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     
     // ===== Kotlin 协程 =====
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     
     // ===== 测试库 =====
     // JUnit 单元测试
     testImplementation("junit:junit:4.13.2")
     // Android 测试扩展
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
     // Espresso UI 测试
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     // Compose UI 测试
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // Compose 调试工具
