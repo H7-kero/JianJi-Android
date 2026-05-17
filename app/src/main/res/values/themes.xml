@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.JianJi" parent="android:Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.JianJi" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="android:colorPrimary">@color/primary</item>
         <item name="android:colorPrimaryContainer">@color/primary_container</item>
         <item name="android:colorError">@color/error</item>
+        <item name="android:statusBarColor">@color/primary</item>
     </style>
 </resources>
