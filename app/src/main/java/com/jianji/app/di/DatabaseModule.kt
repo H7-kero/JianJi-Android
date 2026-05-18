@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.jianji.app.data.local.AppDatabase
 import com.jianji.app.data.local.TransactionDao
-import com.jianji.app.data.repository.TransactionRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,7 +26,6 @@ object DatabaseModule {
             "jianji_database"
         )
             .fallbackToDestructiveMigration()
-            .allowMainThreadQueries()
             .build()
     }
 
@@ -35,11 +33,5 @@ object DatabaseModule {
     @Singleton
     fun provideTransactionDao(database: AppDatabase): TransactionDao {
         return database.transactionDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideTransactionRepository(dao: TransactionDao): TransactionRepository {
-        return TransactionRepository(dao)
     }
 }
