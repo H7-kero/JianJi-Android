@@ -24,6 +24,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
+import com.jianji.app.ui.record.RecordScreen
+import com.jianji.app.ui.record.RecordViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -56,7 +58,8 @@ fun JianJiApp() {
                 HomeScreen(viewModel)
             }
             composable(Screen.Record.route) {
-                PlaceholderScreen("记账")
+                val viewModel: RecordViewModel = hiltViewModel()
+                RecordScreen(viewModel)
             }
             composable(Screen.Report.route) {
                 PlaceholderScreen("报表")
