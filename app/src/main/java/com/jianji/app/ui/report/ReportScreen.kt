@@ -1,207 +1,301 @@
+/**
+ * 报表页面 UI
+ * 
+ * 作用：显示收支统计报表
+ */
 package com.jianji.app.ui.report
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
+/**
+ * 报表页面
+ * 
+ * @param viewModel 报表 ViewModel
+ */
 @Composable
-fun ReportScreen(viewModel: ReportViewModel = hiltViewModel()) {
-    val monthlyExpense by viewModel.monthlyExpense.collectAsState()
-    val monthlyIncome by viewModel.monthlyIncome.collectAsState()
-    val expenseByCategory by viewModel.expenseByCategory.collectAsState()
-    val incomeByCategory by viewModel.incomeByCategory.collectAsState()
-    val allTransactions by viewModel.allTransactions.collectAsState()
+fun ReportScreen(viewModel: ReportViewModel) {
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
 
-    val currentMonth = remember {
-        SimpleDateFormat("yyyy年MM月", Locale.getDefault()).format(Date())
-    }
+    val totalExpense = viewModel.getTotalExpense()
+    val totalIncome = viewModel.getTotalIncome()
+    val expenseByCategory = viewModel.getExpenseByCategory()
+    val incomeByCategory = viewModel.getIncomeByCategory()
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
-        item {
-            Text(
-                text = "报表",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = "报表",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold
+        )
 
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
-                ) {
-                    Text(
-                        text = currentMonth,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "支出",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "¥${String.format("%.2f", monthlyExpense)}",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
+        PeriodSelector(
+            selectedPeriod = selectedPeriod,
+            onPeriodSelected = { viewModel.setPeriod(it) }
+        )
 
-                        Divider(
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(1.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f)
-                        )
+        Spacer(modifier = Modifier.height(24.dp))
 
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "收入",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "¥${String.format("%.2f", monthlyIncome)}",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+        SummaryCard(
+            totalExpense = totalExpense,
+            totalIncome = totalIncome
+        )
 
-                        Divider(
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(1.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f)
-                        )
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "结余",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            val balance = monthlyIncome - monthlyExpense
-                            Text(
-                                text = "¥${String.format("%.2f", balance)}",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (balance >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        Spacer(modifier = Modifier.height(24.dp))
 
         if (expenseByCategory.isNotEmpty()) {
-            item {
-                Text(
-                    text = "支出分类",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            items(expenseByCategory) { stat ->
-                CategoryStatItem(stat = stat, isExpense = true)
-            }
+            CategoryBreakdown(
+                title = "支出分类",
+                data = expenseByCategory,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (incomeByCategory.isNotEmpty()) {
-            item {
-                Text(
-                    text = "收入分类",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            items(incomeByCategory) { stat ->
-                CategoryStatItem(stat = stat, isExpense = false)
-            }
+            CategoryBreakdown(
+                title = "收入分类",
+                data = incomeByCategory,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        if (allTransactions.isEmpty()) {
-            item {
-                Box(
+        if (expenseByCategory.isEmpty() && incomeByCategory.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "暂无数据",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 16.sp
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 时间段选择器
+ */
+@Composable
+fun PeriodSelector(
+    selectedPeriod: String,
+    onPeriodSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        PeriodButton(
+            text = "本周",
+            isSelected = selectedPeriod == "week",
+            onClick = { onPeriodSelected("week") },
+            modifier = Modifier.weight(1f)
+        )
+        PeriodButton(
+            text = "本月",
+            isSelected = selectedPeriod == "month",
+            onClick = { onPeriodSelected("month") },
+            modifier = Modifier.weight(1f)
+        )
+        PeriodButton(
+            text = "本年",
+            isSelected = selectedPeriod == "year",
+            onClick = { onPeriodSelected("year") },
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun PeriodButton(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+            contentColor = if (isSelected) {
+                Color.White
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
+/**
+ * 汇总卡片
+ */
+@Composable
+fun SummaryCard(
+    totalExpense: Double,
+    totalIncome: Double
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                SummaryItem(
+                    label = "总支出",
+                    amount = totalExpense,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Divider(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "暂无数据，请先记账",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                        .height(60.dp)
+                        .width(1.dp),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.3f)
+                )
+                SummaryItem(
+                    label = "总收入",
+                    amount = totalIncome,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
 }
 
 @Composable
-fun CategoryStatItem(stat: CategoryStat, isExpense: Boolean) {
-    Card(
+fun SummaryItem(
+    label: String,
+    amount: Double,
+    color: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "¥${String.format("%.2f", amount)}",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+    }
+}
+
+/**
+ * 分类明细
+ */
+@Composable
+fun CategoryBreakdown(
+    title: String,
+    data: Map<String, Double>,
+    color: Color
+) {
+    val total = data.values.sum()
+
+    Column(
         modifier = Modifier.fillMaxWidth()
     ) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        data.forEach { (category, amount) ->
+            val percentage = if (total > 0) (amount / total * 100).toInt() else 0
+            CategoryItem(
+                category = category,
+                amount = amount,
+                percentage = percentage,
+                color = color
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+fun CategoryItem(
+    category: String,
+    amount: Double,
+    percentage: Int,
+    color: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = stat.category,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "${String.format("%.1f", stat.percentage)}%",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
                 Text(
-                    text = "¥${String.format("%.2f", stat.amount)}",
-                    fontWeight = FontWeight.Bold,
+                    text = category,
                     fontSize = 16.sp,
-                    color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "¥${String.format("%.2f", amount)}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = color
                 )
             }
 
@@ -211,20 +305,29 @@ fun CategoryStatItem(stat: CategoryStat, isExpense: Boolean) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(4.dp)
+                    )
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(stat.percentage / 100f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(4.dp))
+                        .fillMaxWidth(percentage / 100f)
+                        .height(8.dp)
                         .background(
-                            if (isExpense) MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            color = color,
+                            shape = RoundedCornerShape(4.dp)
                         )
                 )
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "$percentage%",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
         }
     }
 }

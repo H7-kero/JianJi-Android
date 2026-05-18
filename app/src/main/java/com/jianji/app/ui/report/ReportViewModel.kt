@@ -1,3 +1,8 @@
+/**
+ * 报表页面 ViewModel
+ * 
+ * 作用：处理报表页面的业务逻辑
+ */
 package com.jianji.app.ui.report
 
 import androidx.lifecycle.ViewModel
@@ -5,130 +10,108 @@ import androidx.lifecycle.viewModelScope
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-data class CategoryStat(
-    val category: String,
-    val amount: Double,
-    val percentage: Float
-)
-
-data class MonthlyStat(
-    val month: String,
-    val expense: Double,
-    val income: Double
-)
-
+/**
+ * 报表 ViewModel
+ * 
+ * @param repository 交易数据仓库
+ */
 @HiltViewModel
 class ReportViewModel @Inject constructor(
     private val repository: TransactionRepository
 ) : ViewModel() {
 
+    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
+    val transactions: StateFlow<List<Transaction>> = _transactions.asStateFlow()
+
     private val _selectedPeriod = MutableStateFlow("month")
     val selectedPeriod: StateFlow<String> = _selectedPeriod.asStateFlow()
 
-    val allTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    val monthlyTransactions: StateFlow<List<Transaction>> = repository.getAllTransactions()
-        .map { transactions ->
-            val (startTime, endTime) = getCurrentMonthRange()
-            transactions.filter { it.timestamp in startTime until endTime }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    val monthlyExpense: StateFlow<Double> = monthlyTransactions
-        .map { transactions ->
-            transactions.filter { it.type == "expense" }.sumOf { it.amount }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0.0
-        )
-
-    val monthlyIncome: StateFlow<Double> = monthlyTransactions
-        .map { transactions ->
-            transactions.filter { it.type == "income" }.sumOf { it.amount }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0.0
-        )
-
-    val expenseByCategory: StateFlow<List<CategoryStat>> = monthlyTransactions
-        .map { transactions ->
-            val expenseTransactions = transactions.filter { it.type == "expense" }
-            val totalExpense = expenseTransactions.sumOf { it.amount }
-
-            expenseTransactions
-                .groupBy { it.category }
-                .map { (category, trans) ->
-                    val amount = trans.sumOf { it.amount }
-                    CategoryStat(
-                        category = category,
-                        amount = amount,
-                        percentage = if (totalExpense > 0) (amount / totalExpense * 100).toFloat() else 0f
-                    )
-                }
-                .sortedByDescending { it.amount }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    val incomeByCategory: StateFlow<List<CategoryStat>> = monthlyTransactions
-        .map { transactions ->
-            val incomeTransactions = transactions.filter { it.type == "income" }
-            val totalIncome = incomeTransactions.sumOf { it.amount }
-
-            incomeTransactions
-                .groupBy { it.category }
-                .map { (category, trans) ->
-                    val amount = trans.sumOf { it.amount }
-                    CategoryStat(
-                        category = category,
-                        amount = amount,
-                        percentage = if (totalIncome > 0) (amount / totalIncome * 100).toFloat() else 0f
-                    )
-                }
-                .sortedByDescending { it.amount }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    fun setSelectedPeriod(period: String) {
-        _selectedPeriod.value = period
+    init {
+        loadTransactions()
     }
 
-    private fun getCurrentMonthRange(): Pair<Long, Long> {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val startTime = calendar.timeInMillis
+    fun setPeriod(period: String) {
+        _selectedPeriod.value = period
+        loadTransactions()
+    }
 
-        calendar.add(Calendar.MONTH, 1)
-        val endTime = calendar.timeInMillis
+    private fun loadTransactions() {
+        viewModelScope.launch {
+            val calendar = Calendar.getInstance()
+            val startTime = when (_selectedPeriod.value) {
+                "week" -> {
+                    calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+                    calendar.timeInMillis
+                }
+                "month" -> {
+                    calendar.set(Calendar.DAY_OF_MONTH, 1)
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+                    calendar.timeInMillis
+                }
+                "year" -> {
+                    calendar.set(Calendar.MONTH, 0)
+                    calendar.set(Calendar.DAY_OF_MONTH, 1)
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+                    calendar.timeInMillis
+                }
+                else -> 0L
+            }
+            repository.getTransactionsSince(startTime).collect {
+                _transactions.value = it
+            }
+        }
+    }
 
-        return Pair(startTime, endTime)
+    fun getTotalExpense(): Double {
+        return _transactions.value
+            .filter { it.type == "expense" }
+            .sumOf { it.amount }
+    }
+
+    fun getTotalIncome(): Double {
+        return _transactions.value
+            .filter { it.type == "income" }
+            .sumOf { it.amount }
+    }
+
+    fun getExpenseByCategory(): Map<String, Double> {
+        return _transactions.value
+            .filter { it.type == "expense" }
+            .groupBy { it.category }
+            .mapValues { (_, transactions) ->
+                transactions.sumOf { it.amount }
+            }
+            .toList()
+            .sortedByDescending { it.second }
+            .toMap()
+    }
+
+    fun getIncomeByCategory(): Map<String, Double> {
+        return _transactions.value
+            .filter { it.type == "income" }
+            .groupBy { it.category }
+            .mapValues { (_, transactions) ->
+                transactions.sumOf { it.amount }
+            }
+            .toList()
+            .sortedByDescending { it.second }
+            .toMap()
     }
 }

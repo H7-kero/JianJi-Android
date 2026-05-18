@@ -1,30 +1,40 @@
+/**
+ * 记账页面 UI
+ * 
+ * 作用：提供记账功能的用户界面
+ */
 package com.jianji.app.ui.record
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 
+/**
+ * 记账页面
+ * 
+ * @param viewModel 记账 ViewModel
+ */
 @Composable
-fun RecordScreen(viewModel: RecordViewModel = hiltViewModel()) {
+fun RecordScreen(viewModel: RecordViewModel) {
     val transactionType by viewModel.transactionType.collectAsState()
     val amount by viewModel.amount.collectAsState()
-    val category by viewModel.category.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val selectedSubCategory by viewModel.selectedSubCategory.collectAsState()
     val note by viewModel.note.collectAsState()
-    val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val isSaved by viewModel.isSaved.collectAsState()
 
     val categories = if (transactionType == "expense") {
         viewModel.expenseCategories
@@ -32,10 +42,14 @@ fun RecordScreen(viewModel: RecordViewModel = hiltViewModel()) {
         viewModel.incomeCategories
     }
 
-    LaunchedEffect(saveSuccess) {
-        if (saveSuccess) {
-            kotlinx.coroutines.delay(1500)
-            viewModel.resetSaveSuccess()
+    val availableSubCategories = selectedCategory?.let {
+        viewModel.subCategories[it]
+    }
+
+    LaunchedEffect(isSaved) {
+        if (isSaved) {
+            viewModel.resetForm()
+            viewModel.resetSavedState()
         }
     }
 
@@ -43,109 +57,66 @@ fun RecordScreen(viewModel: RecordViewModel = hiltViewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = "记账",
+            text = "记一笔",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        TransactionTypeSelector(
+        TypeSelector(
             selectedType = transactionType,
             onTypeSelected = { viewModel.setTransactionType(it) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedTextField(
-            value = amount,
-            onValueChange = { viewModel.setAmount(it) },
-            label = { Text("金额") },
-            prefix = { Text("¥ ") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+        AmountInput(
+            amount = amount,
+            onAmountChange = { viewModel.setAmount(it) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "选择分类",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+        CategorySelector(
+            categories = categories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = { viewModel.selectCategory(it) }
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.height(200.dp)
-        ) {
-            items(categories) { cat ->
-                CategoryChip(
-                    text = cat,
-                    selected = cat == category,
-                    onClick = { viewModel.setCategory(cat) }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            value = note,
-            onValueChange = { viewModel.setNote(it) },
-            label = { Text("备注（选填）") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        if (saveSuccess) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Text(
-                    text = "记账成功！",
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
+        if (availableSubCategories != null) {
             Spacer(modifier = Modifier.height(16.dp))
+            SubCategorySelector(
+                subCategories = availableSubCategories,
+                selectedSubCategory = selectedSubCategory,
+                onSubCategorySelected = { viewModel.selectSubCategory(it) }
+            )
         }
 
-        Button(
-            onClick = { viewModel.saveTransaction() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            enabled = amount.isNotEmpty() && category.isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (transactionType == "expense") {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            )
-        ) {
-            Text(
-                text = if (transactionType == "expense") "记支出" else "记收入",
-                fontSize = 18.sp
-            )
-        }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        NoteInput(
+            note = note,
+            onNoteChange = { viewModel.setNote(it) }
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        SaveButton(
+            enabled = amount.isNotEmpty() && selectedCategory != null,
+            onClick = { viewModel.saveTransaction() }
+        )
     }
 }
 
+/**
+ * 类型选择器（支出/收入）
+ */
 @Composable
-fun TransactionTypeSelector(
+fun TypeSelector(
     selectedType: String,
     onTypeSelected: (String) -> Unit
 ) {
@@ -153,68 +124,380 @@ fun TransactionTypeSelector(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        FilterChip(
-            selected = selectedType == "expense",
+        TypeButton(
+            text = "支出",
+            isSelected = selectedType == "expense",
+            color = MaterialTheme.colorScheme.error,
             onClick = { onTypeSelected("expense") },
-            label = { Text("支出") },
-            modifier = Modifier.weight(1f),
-            colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-                selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer
-            )
+            modifier = Modifier.weight(1f)
         )
-
-        FilterChip(
-            selected = selectedType == "income",
+        TypeButton(
+            text = "收入",
+            isSelected = selectedType == "income",
+            color = MaterialTheme.colorScheme.primary,
             onClick = { onTypeSelected("income") },
-            label = { Text("收入") },
-            modifier = Modifier.weight(1f),
-            colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            modifier = Modifier.weight(1f)
         )
     }
 }
 
 @Composable
-fun CategoryChip(
+fun TypeButton(
     text: String,
-    selected: Boolean,
-    onClick: () -> Unit
+    isSelected: Boolean,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outline
-            }
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(56.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) color else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        color = if (selected) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surface
-        }
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Box(
-            modifier = Modifier.padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
+        Text(
+            text = text,
+            fontSize = 18.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
+/**
+ * 金额输入框
+ */
+@Composable
+fun AmountInput(
+    amount: String,
+    onAmountChange: (String) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                text = text,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
+                text = "金额",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "¥",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                TextField(
+                    value = amount,
+                    onValueChange = onAmountChange,
+                    modifier = Modifier.weight(1f),
+                    textStyle = LocalTextStyle.current.copy(
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    placeholder = {
+                        Text(
+                            text = "0.00",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
+                        )
+                    },
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent
+                    )
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 分类选择器
+ */
+@Composable
+fun CategorySelector(
+    categories: List<String>,
+    selectedCategory: String?,
+    onCategorySelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "选择分类",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        CategoryGrid(
+            categories = categories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = onCategorySelected
+        )
+    }
+}
+
+@Composable
+fun CategoryGrid(
+    categories: List<String>,
+    selectedCategory: String?,
+    onCategorySelected: (String) -> Unit
+) {
+    val rows = categories.chunked(4)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        rows.forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                row.forEach { category ->
+                    CategoryItem(
+                        category = category,
+                        isSelected = selectedCategory == category,
+                        onClick = { onCategorySelected(category) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                repeat(4 - row.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryItem(
+    category: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = category,
+                fontSize = 14.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = if (isSelected) {
+                    MaterialTheme.colorScheme.onSecondaryContainer
                 } else {
-                    MaterialTheme.colorScheme.onSurface
+                    MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
         }
+    }
+}
+
+/**
+ * 子分类选择器
+ */
+@Composable
+fun SubCategorySelector(
+    subCategories: List<String>,
+    selectedSubCategory: String?,
+    onSubCategorySelected: (String?) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "选择子分类（可选）",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        FilterChip(
+            selected = selectedSubCategory == null,
+            onClick = { onSubCategorySelected(null) },
+            label = { Text("不选择子分类") },
+            leadingIcon = if (selectedSubCategory == null) {
+                { Icon(Icons.Default.Check, contentDescription = null) }
+            } else null
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        SubCategoryGrid(
+            subCategories = subCategories,
+            selectedSubCategory = selectedSubCategory,
+            onSubCategorySelected = onSubCategorySelected
+        )
+    }
+}
+
+@Composable
+fun SubCategoryGrid(
+    subCategories: List<String>,
+    selectedSubCategory: String?,
+    onSubCategorySelected: (String) -> Unit
+) {
+    val rows = subCategories.chunked(4)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        rows.forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                row.forEach { subCategory ->
+                    SubCategoryItem(
+                        subCategory = subCategory,
+                        isSelected = selectedSubCategory == subCategory,
+                        onClick = { onSubCategorySelected(subCategory) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                repeat(4 - row.size) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SubCategoryItem(
+    subCategory: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.tertiaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subCategory,
+                fontSize = 12.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = if (isSelected) {
+                    MaterialTheme.colorScheme.onTertiaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+            )
+        }
+    }
+}
+
+/**
+ * 备注输入框
+ */
+@Composable
+fun NoteInput(
+    note: String,
+    onNoteChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "备注（可选）",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = note,
+            onValueChange = onNoteChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("添加备注...") },
+            minLines = 3,
+            maxLines = 5,
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
+}
+
+/**
+ * 保存按钮
+ */
+@Composable
+fun SaveButton(
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = "保存",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
