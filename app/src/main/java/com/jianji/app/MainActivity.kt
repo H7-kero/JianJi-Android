@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -73,7 +73,7 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
     val items = listOf(
         Triple(Screen.Home, Icons.Default.Home, "首页"),
         Triple(Screen.Record, Icons.Default.AddCircle, "记账"),
-        Triple(Screen.Report, Icons.Default.TrendingUp, "报表"),
+        Triple(Screen.Report, Icons.Default.PieChart, "报表"),
         Triple(Screen.Profile, Icons.Default.Person, "我的")
     )
 
