@@ -26,6 +26,8 @@ import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
 import com.jianji.app.ui.record.RecordScreen
 import com.jianji.app.ui.record.RecordViewModel
+import com.jianji.app.ui.report.ReportScreen
+import com.jianji.app.ui.report.ReportViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -62,7 +64,8 @@ fun JianJiApp() {
                 RecordScreen(viewModel)
             }
             composable(Screen.Report.route) {
-                PlaceholderScreen("报表")
+                val viewModel: ReportViewModel = hiltViewModel()
+                ReportScreen(viewModel)
             }
             composable(Screen.Profile.route) {
                 PlaceholderScreen("我的")
