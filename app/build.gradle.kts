@@ -105,6 +105,9 @@ dependencies {
     // Material 图标扩展
     implementation("androidx.compose.material:material-icons-extended")
     
+    // Material Components 库（提供 XML 主题资源）
+    implementation("com.google.android.material:material:1.12.0")
+    
     // Compose 导航
     implementation("androidx.navigation:navigation-compose:2.8.1")
     
