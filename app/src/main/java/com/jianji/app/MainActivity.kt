@@ -4,6 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,8 +22,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -68,7 +77,36 @@ fun JianJiApp(repository: TransactionRepository) {
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
+            enterTransition = {
+                fadeIn(
+                    animationSpec = tween(300, delayMillis = 100)
+                ) + slideInHorizontally(
+                    initialOffsetX = { it / 8 },
+                    animationSpec = tween(350)
+                )
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(200)) +
+                        slideOutHorizontally(
+                            targetOffsetX = { -it / 8 },
+                            animationSpec = tween(250)
+                        )
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(250)) +
+                        slideInHorizontally(
+                            initialOffsetX = { -it / 8 },
+                            animationSpec = tween(300)
+                        )
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(200)) +
+                        slideOutHorizontally(
+                            targetOffsetX = { it / 8 },
+                            animationSpec = tween(300)
+                        )
+            }
         ) {
             composable(Screen.Home.route) {
                 val viewModel = HomeViewModel(repository)
@@ -92,59 +130,106 @@ fun JianJiApp(repository: TransactionRepository) {
 @Composable
 fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
     val items = listOf(
-        Triple(Screen.Home, Icons.Default.Home, "首页"),
-        Triple(Screen.Record, Icons.Default.AddCircle, "记账"),
-        Triple(Screen.Report, Icons.Default.BarChart, "报表"),
-        Triple(Screen.Profile, Icons.Default.Person, "我的")
+        NavItem(Screen.Home, Icons.Default.Home, "首页"),
+        NavItem(Screen.Record, Icons.Default.AddCircle, "记账"),
+        NavItem(Screen.Report, Icons.Default.BarChart, "报表"),
+        NavItem(Screen.Profile, Icons.Default.Person, "我的")
     )
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .padding(bottom = 12.dp)
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(24.dp),
+                clip = false,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.08f)
+            )
+            .clip(RoundedCornerShape(24.dp))
+            .background(GlassColors.glassNavBackground)
     ) {
-        NavigationBar(
-            containerColor = GlassColors.glassNavBackground,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            tonalElevation = 0.dp,
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(24.dp),
-                    clip = false,
-                    ambientColor = Color.Black.copy(alpha = 0.06f),
-                    spotColor = Color.Black.copy(alpha = 0.06f)
-                )
+                .padding(horizontal = 6.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentDestination = navBackStackEntry?.destination
+            items.forEach { item ->
+                val selected = currentDestination?.hierarchy?.any {
+                    it.route == item.screen.route
+                } == true
 
-            items.forEach { (screen, icon, label) ->
-                NavigationBarItem(
-                    icon = { Icon(icon, contentDescription = label) },
-                    label = { Text(label, fontSize = 10.sp) },
-                    selected = currentDestination?.hierarchy?.any {
-                        it.route == screen.route
-                    } == true,
-                    onClick = {
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = Color.Black.copy(alpha = 0.06f)
-                    )
+                val indicatorWidth by animateFloatAsState(
+                    targetValue = if (selected) 1f else 0f,
+                    animationSpec = tween(300),
+                    label = "nav_indicator"
                 )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 3.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            if (selected) Color.Black.copy(alpha = 0.06f)
+                            else Color.Transparent
+                        )
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            navController.navigate(item.screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(horizontal = if (selected) 14.dp else 6.dp)
+                    ) {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.label,
+                            tint = if (selected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        if (selected) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = item.label,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.Center,
+                                softWrap = false
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
+
+private data class NavItem(
+    val screen: Screen,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val label: String
+)
 
 sealed class Screen(val route: String, val label: String) {
     data object Home : Screen("home", "首页")
