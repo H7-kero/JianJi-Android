@@ -178,16 +178,24 @@ fun TransactionItem(transaction: Transaction) {
         ) {
             // 左侧：分类和备注
             Column {
-                val categoryText = if (transaction.subCategory != null) {
-                    "${transaction.category} - ${transaction.subCategory}"
-                } else {
-                    transaction.category
+                val categoryText = buildString {
+                    append(transaction.category)
+                    if (transaction.subCategory != null) {
+                        append(" - ${transaction.subCategory}")
+                    }
                 }
                 Text(
                     text = categoryText,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp
                 )
+                if (transaction.channel != null) {
+                    Text(
+                        text = transaction.channel,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (transaction.note.isNotEmpty()) {
                     Text(
                         text = transaction.note,

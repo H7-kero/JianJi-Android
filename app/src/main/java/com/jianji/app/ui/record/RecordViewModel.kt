@@ -39,6 +39,10 @@ class RecordViewModel(
     private val _selectedSubCategory = MutableStateFlow<String?>(null)
     val selectedSubCategory: StateFlow<String?> = _selectedSubCategory.asStateFlow()
 
+    // 选中的支付渠道
+    private val _selectedChannel = MutableStateFlow("微信")
+    val selectedChannel: StateFlow<String> = _selectedChannel.asStateFlow()
+
     // 备注
     private val _note = MutableStateFlow("")
     val note: StateFlow<String> = _note.asStateFlow()
@@ -69,6 +73,9 @@ class RecordViewModel(
         "交通" to "充电"
     )
 
+    // 支付渠道列表
+    val channels = listOf("微信", "支付宝", "京东", "其他")
+
     /**
      * 获取某个分类的子分类列表
      */
@@ -83,6 +90,7 @@ class RecordViewModel(
         _transactionType.value = type
         _selectedCategory.value = null
         _selectedSubCategory.value = null
+        _selectedChannel.value = "微信"
     }
 
     /**
@@ -112,6 +120,13 @@ class RecordViewModel(
     }
 
     /**
+     * 选择支付渠道
+     */
+    fun selectChannel(channel: String) {
+        _selectedChannel.value = channel
+    }
+
+    /**
      * 更新备注
      */
     fun setNote(note: String) {
@@ -130,6 +145,7 @@ class RecordViewModel(
                 amount = amountValue,
                 category = category,
                 subCategory = _selectedSubCategory.value,
+                channel = _selectedChannel.value,
                 type = _transactionType.value,
                 note = _note.value
             )
@@ -153,6 +169,7 @@ class RecordViewModel(
         _amount.value = ""
         _selectedCategory.value = null
         _selectedSubCategory.value = null
+        _selectedChannel.value = "微信"
         _note.value = ""
     }
 }

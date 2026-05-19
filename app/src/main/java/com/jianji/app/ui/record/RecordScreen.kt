@@ -33,6 +33,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
     val amount by viewModel.amount.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val selectedSubCategory by viewModel.selectedSubCategory.collectAsState()
+    val selectedChannel by viewModel.selectedChannel.collectAsState()
     val note by viewModel.note.collectAsState()
     val isSaved by viewModel.isSaved.collectAsState()
 
@@ -80,6 +81,15 @@ fun RecordScreen(viewModel: RecordViewModel) {
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        if (transactionType == "expense") {
+            ChannelSelector(
+                channels = viewModel.channels,
+                selectedChannel = selectedChannel,
+                onChannelSelected = { viewModel.selectChannel(it) }
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         CategorySelector(
             categories = categories,
@@ -226,6 +236,83 @@ fun AmountInput(
                         focusedIndicatorColor = Color.Transparent
                     )
                 )
+            }
+        }
+    }
+}
+
+/**
+ * 支付渠道选择器
+ */
+@Composable
+fun ChannelSelector(
+    channels: List<String>,
+    selectedChannel: String,
+    onChannelSelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "支付渠道",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        val rows = channels.chunked(4)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            rows.forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    row.forEach { channel ->
+                        val isSelected = selectedChannel == channel
+                        Card(
+                            onClick = { onChannelSelected(channel) },
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                }
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = channel,
+                                    fontSize = 14.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    repeat(4 - row.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }

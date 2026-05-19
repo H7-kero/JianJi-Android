@@ -40,6 +40,9 @@ data class Transaction(
     // 子分类名称，如"早餐"、"午餐"（可选）
     val subCategory: String? = null,
 
+    // 支付渠道，如"微信"、"支付宝"、"京东"、"其他"
+    val channel: String? = null,
+
     // 交易类型："expense" 表示支出，"income" 表示收入
     val type: String,
 
