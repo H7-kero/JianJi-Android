@@ -1,7 +1,11 @@
 package com.jianji.app.ui.theme
 
-import androidx.compose.animation.core.*
-import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
@@ -46,17 +50,22 @@ val iOSDialogExit = tween<Float>(
     easing = FastOutSlowInEasing
 )
 
-fun Modifier.iosPressEffect(): Modifier = composed {
+val iOSColorTransition = tween<Float>(
+    durationMillis = 300,
+    easing = FastOutSlowInEasing
+)
+
+fun Modifier.iosPressEffect(onClick: () -> Unit): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.97f else 1f,
         animationSpec = iOSSnappy,
         label = "press_scale"
     )
-
-    this
-        .scale(scale)
-        .then(Modifier.composed { this })
+    scale(scale).clickable(
+        interactionSource = interactionSource,
+        indication = null,
+        onClick = onClick
+    )
 }

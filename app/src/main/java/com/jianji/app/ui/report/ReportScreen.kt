@@ -1,5 +1,7 @@
 package com.jianji.app.ui.report
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -292,6 +294,17 @@ fun YearPickerDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        AnimatedVisibility(
+            visible = true,
+            enter = scaleIn(
+                initialScale = 0.92f,
+                animationSpec = tween(350)
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = scaleOut(
+                targetScale = 0.92f,
+                animationSpec = tween(250)
+            ) + fadeOut(animationSpec = tween(200))
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -333,6 +346,7 @@ fun YearPickerDialog(
                 }
             }
         }
+        }
     }
 }
 
@@ -351,6 +365,17 @@ fun MonthPickerDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        AnimatedVisibility(
+            visible = true,
+            enter = scaleIn(
+                initialScale = 0.92f,
+                animationSpec = tween(350)
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = scaleOut(
+                targetScale = 0.92f,
+                animationSpec = tween(250)
+            ) + fadeOut(animationSpec = tween(200))
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -403,6 +428,7 @@ fun MonthPickerDialog(
                 }
             }
         }
+        }
     }
 }
 
@@ -419,6 +445,17 @@ fun DayDetailDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        AnimatedVisibility(
+            visible = true,
+            enter = scaleIn(
+                initialScale = 0.92f,
+                animationSpec = tween(350)
+            ) + fadeIn(animationSpec = tween(300)),
+            exit = scaleOut(
+                targetScale = 0.92f,
+                animationSpec = tween(250)
+            ) + fadeOut(animationSpec = tween(200))
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
@@ -499,6 +536,8 @@ fun DayDetailDialog(
                     }
                 }
             }
+            }
+        }
         }
     }
 }

@@ -1,7 +1,10 @@
 package com.jianji.app.ui.record
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +51,15 @@ fun RecordScreen(viewModel: RecordViewModel) {
         }
     }
 
+    var animationStarted by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        animationStarted = true
+    }
+
+    val entrySpec = tween<Float>(durationMillis = 400, easing = FastOutSlowInEasing)
+    val offsetPx = 30
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -57,66 +69,120 @@ fun RecordScreen(viewModel: RecordViewModel) {
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "记一笔",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 0)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+        ) {
+            Text(
+                text = "记一笔",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        TypeSelector(
-            selectedType = transactionType,
-            onTypeSelected = { viewModel.setTransactionType(it) }
-        )
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 60)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+        ) {
+            TypeSelector(
+                selectedType = transactionType,
+                onTypeSelected = { viewModel.setTransactionType(it) }
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        AmountInput(
-            amount = amount,
-            onAmountChange = { viewModel.setAmount(it) }
-        )
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 100)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+        ) {
+            AmountInput(
+                amount = amount,
+                onAmountChange = { viewModel.setAmount(it) }
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         if (transactionType == "expense") {
-            ChannelSelector(
-                channels = viewModel.channels,
-                selectedChannel = selectedChannel,
-                onChannelSelected = { viewModel.selectChannel(it) }
-            )
-            Spacer(modifier = Modifier.height(24.dp))
+            AnimatedVisibility(
+                visible = animationStarted,
+                enter = fadeIn(animationSpec = tween(350, delayMillis = 140)) +
+                        slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+            ) {
+                Column {
+                    ChannelSelector(
+                        channels = viewModel.channels,
+                        selectedChannel = selectedChannel,
+                        onChannelSelected = { viewModel.selectChannel(it) }
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
         }
 
-        CategorySelector(
-            categories = categories,
-            selectedCategory = selectedCategory,
-            onCategorySelected = { viewModel.selectCategory(it) }
-        )
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 180)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+        ) {
+            CategorySelector(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { viewModel.selectCategory(it) }
+            )
+        }
 
         if (availableSubCategories != null) {
-            Spacer(modifier = Modifier.height(20.dp))
-            SubCategorySelector(
-                subCategories = availableSubCategories,
-                selectedSubCategory = selectedSubCategory,
-                onSubCategorySelected = { viewModel.selectSubCategory(it) }
-            )
+            AnimatedVisibility(
+                visible = animationStarted,
+                enter = fadeIn(animationSpec = tween(350, delayMillis = 220)) +
+                        slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SubCategorySelector(
+                        subCategories = availableSubCategories,
+                        selectedSubCategory = selectedSubCategory,
+                        onSubCategorySelected = { viewModel.selectSubCategory(it) }
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 260)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+        ) {
+            Column {
+                Spacer(modifier = Modifier.height(24.dp))
+                NoteInput(
+                    note = note,
+                    onNoteChange = { viewModel.setNote(it) }
+                )
+            }
+        }
 
-        NoteInput(
-            note = note,
-            onNoteChange = { viewModel.setNote(it) }
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        SaveButton(
-            enabled = amount.isNotEmpty() && selectedCategory != null,
-            onClick = { viewModel.saveTransaction() }
-        )
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 320)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+        ) {
+            Column {
+                Spacer(modifier = Modifier.height(32.dp))
+                SaveButton(
+                    enabled = amount.isNotEmpty() && selectedCategory != null,
+                    onClick = { viewModel.saveTransaction() }
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
     }
