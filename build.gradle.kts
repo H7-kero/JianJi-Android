@@ -13,13 +13,3 @@ plugins {
     id("com.google.dagger.hilt.android") version "2.51.1" apply false
     id("com.google.devtools.ksp") version "1.9.25-1.0.20" apply false
 }
-
-allprojects {
-    // 配置项目的 Maven 仓库
-    repositories {
-        // Google Maven 仓库（Android 官方库）
-        google()
-        // Maven Central（第三方库）
-        mavenCentral()
-    }
-}
