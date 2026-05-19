@@ -11,7 +11,9 @@
  */
 package com.jianji.app.data.local
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.model.Category
@@ -47,4 +49,23 @@ abstract class AppDatabase : RoomDatabase() {
     // 后续可以添加其他 DAO
     // abstract fun categoryDao(): CategoryDao
     // abstract fun budgetDao(): BudgetDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
+
+        fun getDatabase(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "jianji_database"
+                )
+                .fallbackToDestructiveMigration()
+                .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
 }

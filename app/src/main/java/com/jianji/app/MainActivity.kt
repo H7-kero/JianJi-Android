@@ -29,7 +29,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jianji.app.data.local.AppDatabase
-import com.jianji.app.data.local.TransactionDao
 import com.jianji.app.data.repository.TransactionRepository
 import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
@@ -37,8 +36,6 @@ import com.jianji.app.ui.record.RecordScreen
 import com.jianji.app.ui.record.RecordViewModel
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 
 /**
  * 主 Activity
@@ -79,36 +76,15 @@ fun JianJiApp(repository: TransactionRepository) {
             modifier = Modifier.padding(padding)
         ) {
             composable(Screen.Home.route) {
-                val viewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                    factory = object : ViewModelProvider.Factory {
-                        @Suppress("UNCHECKED_CAST")
-                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return HomeViewModel(repository) as T
-                        }
-                    }
-                )
+                val viewModel = HomeViewModel(repository)
                 HomeScreen(viewModel)
             }
             composable(Screen.Record.route) {
-                val viewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                    factory = object : ViewModelProvider.Factory {
-                        @Suppress("UNCHECKED_CAST")
-                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return RecordViewModel(repository) as T
-                        }
-                    }
-                )
+                val viewModel = RecordViewModel(repository)
                 RecordScreen(viewModel)
             }
             composable(Screen.Report.route) {
-                val viewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                    factory = object : ViewModelProvider.Factory {
-                        @Suppress("UNCHECKED_CAST")
-                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return ReportViewModel(repository) as T
-                        }
-                    }
-                )
+                val viewModel = ReportViewModel(repository)
                 ReportScreen(viewModel)
             }
             composable(Screen.Profile.route) {
