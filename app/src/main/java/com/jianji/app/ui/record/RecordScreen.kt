@@ -230,10 +230,8 @@ fun AmountInput(
                     },
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
@@ -460,13 +458,7 @@ fun NoteInput(
                 placeholder = { Text("添加备注...") },
                 minLines = 3,
                 maxLines = 5,
-                shape = RoundedCornerShape(16.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
-                )
+                shape = RoundedCornerShape(16.dp)
             )
         }
     }
