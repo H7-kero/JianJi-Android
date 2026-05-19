@@ -1,8 +1,3 @@
-/**
- * 报表页面 UI
- * 
- * 作用：日历视图 + 日期详情浮窗
- */
 package com.jianji.app.ui.report
 
 import androidx.compose.foundation.background
@@ -28,14 +23,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.jianji.app.data.model.Transaction
+import com.jianji.app.ui.theme.GlassColors
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-/**
- * 格式化金额：整数不显示小数，有小数保留
- */
 fun formatAmount(amount: Double): String {
     return if (amount == amount.toLong().toDouble()) {
         amount.toLong().toString()
@@ -44,9 +37,6 @@ fun formatAmount(amount: Double): String {
     }
 }
 
-/**
- * 报表页面（日历视图）
- */
 @Composable
 fun ReportScreen(viewModel: ReportViewModel) {
     val year by viewModel.selectedYear.collectAsState()
@@ -79,44 +69,48 @@ fun ReportScreen(viewModel: ReportViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(GlassColors.glassBackground)
+            .padding(horizontal = 20.dp)
     ) {
-        Text(
-            text = "报表",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        Text(
+            text = "报表",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(20.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("本月支出", fontSize = 13.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("本月支出", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         "¥${formatAmount(monthlyExpense)}",
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("本月收入", fontSize = 13.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("本月收入", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         "¥${formatAmount(monthlyIncome)}",
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -124,7 +118,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -132,34 +126,32 @@ fun ReportScreen(viewModel: ReportViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { viewModel.goToPreviousMonth() }) {
-                Icon(Icons.Default.ChevronLeft, contentDescription = "上个月")
+                Icon(Icons.Default.ChevronLeft, contentDescription = "上个月", tint = MaterialTheme.colorScheme.onBackground)
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "${year}年",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.clickable { showYearPicker = true }
                 )
                 Text(
                     text = "${month}月",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.clickable { showMonthPicker = true }
                 )
             }
 
             IconButton(onClick = { viewModel.goToNextMonth() }) {
-                Icon(Icons.Default.ChevronRight, contentDescription = "下个月")
+                Icon(Icons.Default.ChevronRight, contentDescription = "下个月", tint = MaterialTheme.colorScheme.onBackground)
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         val weekDays = listOf("一", "二", "三", "四", "五", "六", "日")
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -168,7 +160,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
                     text = day,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -180,9 +172,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
         val totalCells = blankCells + daysInMonth
         val rows = (totalCells + 6) / 7
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             for (row in 0 until rows) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     for (col in 0..6) {
@@ -201,9 +191,9 @@ fun ReportScreen(viewModel: ReportViewModel) {
                                     .weight(1f)
                                     .aspectRatio(0.85f)
                                     .padding(2.dp)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(10.dp))
                                     .background(
-                                        if (isToday) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                        if (isToday) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
                                         else Color.Transparent
                                     )
                                     .clickable {
@@ -221,7 +211,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
                                 ) {
                                     Text(
                                         text = "$dayNum",
-                                        fontSize = 11.sp,
+                                        fontSize = 12.sp,
                                         fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
                                         color = if (isToday) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.onSurface
@@ -289,9 +279,6 @@ fun ReportScreen(viewModel: ReportViewModel) {
     }
 }
 
-/**
- * 年份选择弹窗
- */
 @Composable
 fun YearPickerDialog(
     selectedYear: Int,
@@ -305,38 +292,40 @@ fun YearPickerDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Card(
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
-                .fillMaxHeight(0.5f),
-            shape = RoundedCornerShape(16.dp)
+                .fillMaxHeight(0.5f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "选择年份",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn {
                     items(years) { year ->
                         val isSelected = year == selectedYear
-                        Surface(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onYearSelected(year) },
-                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                            else Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                    else Color.Transparent
+                                )
+                                .clickable { onYearSelected(year) }
+                                .padding(14.dp)
                         ) {
                             Text(
                                 text = "${year}年",
-                                modifier = Modifier.padding(12.dp),
-                                fontSize = 16.sp,
+                                fontSize = 17.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -347,9 +336,6 @@ fun YearPickerDialog(
     }
 }
 
-/**
- * 月份选择弹窗
- */
 @Composable
 fun MonthPickerDialog(
     selectedMonth: Int,
@@ -365,43 +351,47 @@ fun MonthPickerDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            shape = RoundedCornerShape(16.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "选择月份",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 val rows = months.chunked(4)
                 rows.forEach { row ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        row.forEachIndexed { index, monthName ->
+                        row.forEach { monthName ->
                             val monthNum = months.indexOf(monthName) + 1
                             val isSelected = monthNum == selectedMonth
-                            Button(
-                                onClick = { onMonthSelected(monthNum) },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.surfaceVariant,
-                                    contentColor = if (isSelected) Color.White
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                shape = RoundedCornerShape(8.dp)
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                        else GlassColors.glassSurfaceVariant
+                                    )
+                                    .clickable { onMonthSelected(monthNum) }
+                                    .padding(vertical = 14.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = monthName,
                                     fontSize = 15.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -409,16 +399,13 @@ fun MonthPickerDialog(
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
         }
     }
 }
 
-/**
- * 日期详情浮窗
- */
 @Composable
 fun DayDetailDialog(
     year: Int,
@@ -432,15 +419,14 @@ fun DayDetailDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Card(
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.65f),
-            shape = RoundedCornerShape(16.dp)
+                .fillMaxHeight(0.65f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -449,7 +435,8 @@ fun DayDetailDialog(
                     Text(
                         text = "${year}年${month}月${daySummary.day}日",
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     TextButton(onClick = onDismiss) {
                         Text("关闭")
@@ -467,7 +454,7 @@ fun DayDetailDialog(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.error
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
 
                         val expenseTxs = daySummary.transactions
@@ -483,7 +470,7 @@ fun DayDetailDialog(
                         if (daySummary.income > 0) {
                             item {
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Divider()
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
@@ -497,7 +484,7 @@ fun DayDetailDialog(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
 
                         val incomeTxs = daySummary.transactions
@@ -516,22 +503,17 @@ fun DayDetailDialog(
     }
 }
 
-/**
- * 交易详情条目
- */
 @Composable
 fun TransactionDetailItem(
     transaction: Transaction,
     timeFormat: SimpleDateFormat
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 3.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ),
-        shape = RoundedCornerShape(8.dp)
+            .padding(vertical = 3.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(GlassColors.glassSurfaceVariant)
     ) {
         Row(
             modifier = Modifier
@@ -550,11 +532,10 @@ fun TransactionDetailItem(
                 Text(
                     text = desc,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (transaction.channel != null) {
                         Text(
                             text = transaction.channel,

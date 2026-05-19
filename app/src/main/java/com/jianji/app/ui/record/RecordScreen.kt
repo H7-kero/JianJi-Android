@@ -1,10 +1,7 @@
-/**
- * 记账页面 UI
- * 
- * 作用：提供记账功能的用户界面
- */
 package com.jianji.app.ui.record
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,17 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jianji.app.ui.theme.GlassColors
 
-/**
- * 记账页面
- * 
- * @param viewModel 记账 ViewModel
- */
 @Composable
 fun RecordScreen(viewModel: RecordViewModel) {
     val transactionType by viewModel.transactionType.collectAsState()
@@ -57,13 +51,17 @@ fun RecordScreen(viewModel: RecordViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(GlassColors.glassBackground)
+            .padding(horizontal = 20.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = "记一笔",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -98,7 +96,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         )
 
         if (availableSubCategories != null) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             SubCategorySelector(
                 subCategories = availableSubCategories,
                 selectedSubCategory = selectedSubCategory,
@@ -119,12 +117,11 @@ fun RecordScreen(viewModel: RecordViewModel) {
             enabled = amount.isNotEmpty() && selectedCategory != null,
             onClick = { viewModel.saveTransaction() }
         )
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
-/**
- * 类型选择器（支出/收入）
- */
 @Composable
 fun TypeSelector(
     selectedType: String,
@@ -137,14 +134,14 @@ fun TypeSelector(
         TypeButton(
             text = "支出",
             isSelected = selectedType == "expense",
-            color = MaterialTheme.colorScheme.error,
+            color = Color(0xFFFF3B30),
             onClick = { onTypeSelected("expense") },
             modifier = Modifier.weight(1f)
         )
         TypeButton(
             text = "收入",
             isSelected = selectedType == "income",
-            color = MaterialTheme.colorScheme.primary,
+            color = Color(0xFF34C759),
             onClick = { onTypeSelected("income") },
             modifier = Modifier.weight(1f)
         )
@@ -159,36 +156,39 @@ fun TypeButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.height(56.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) color else MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = modifier
+            .height(52.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .then(
+                if (isSelected) {
+                    Modifier.background(color.copy(alpha = 0.12f))
+                } else {
+                    Modifier.background(GlassColors.glassCardBackground)
+                }
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            fontSize = 18.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            fontSize = 17.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (isSelected) color else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
-/**
- * 金额输入框
- */
 @Composable
 fun AmountInput(
     amount: String,
     onAmountChange: (String) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(GlassColors.glassCardBackground)
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -196,7 +196,7 @@ fun AmountInput(
             Text(
                 text = "金额",
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -204,9 +204,9 @@ fun AmountInput(
             ) {
                 Text(
                     text = "¥",
-                    fontSize = 32.sp,
+                    fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 TextField(
@@ -214,7 +214,7 @@ fun AmountInput(
                     onValueChange = onAmountChange,
                     modifier = Modifier.weight(1f),
                     textStyle = LocalTextStyle.current.copy(
-                        fontSize = 32.sp,
+                        fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
                     ),
                     keyboardOptions = KeyboardOptions(
@@ -222,10 +222,10 @@ fun AmountInput(
                     ),
                     placeholder = {
                         Text(
-                            text = "0.00",
-                            fontSize = 32.sp,
+                            text = "0",
+                            fontSize = 36.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                         )
                     },
                     singleLine = true,
@@ -241,73 +241,35 @@ fun AmountInput(
     }
 }
 
-/**
- * 支付渠道选择器
- */
 @Composable
 fun ChannelSelector(
     channels: List<String>,
     selectedChannel: String,
     onChannelSelected: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "支付渠道",
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(12.dp))
         val rows = channels.chunked(4)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             rows.forEach { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     row.forEach { channel ->
                         val isSelected = selectedChannel == channel
-                        Card(
+                        GlassChip(
+                            label = channel,
+                            isSelected = isSelected,
                             onClick = { onChannelSelected(channel) },
-                            modifier = Modifier.weight(1f),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                }
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = channel,
-                                    fontSize = 14.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) {
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                            }
-                        }
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                     repeat(4 - row.size) {
                         Spacer(modifier = Modifier.weight(1f))
@@ -318,22 +280,18 @@ fun ChannelSelector(
     }
 }
 
-/**
- * 分类选择器
- */
 @Composable
 fun CategorySelector(
     categories: List<String>,
     selectedCategory: String?,
     onCategorySelected: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "选择分类",
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(12.dp))
         CategoryGrid(
@@ -351,17 +309,15 @@ fun CategoryGrid(
     onCategorySelected: (String) -> Unit
 ) {
     val rows = categories.chunked(4)
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { category ->
-                    CategoryItem(
-                        category = category,
+                    GlassChip(
+                        label = category,
                         isSelected = selectedCategory == category,
                         onClick = { onCategorySelected(category) },
                         modifier = Modifier.weight(1f)
@@ -376,68 +332,17 @@ fun CategoryGrid(
 }
 
 @Composable
-fun CategoryItem(
-    category: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.secondaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = category,
-                fontSize = 14.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onSecondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-        }
-    }
-}
-
-/**
- * 子分类选择器（必选）
- */
-@Composable
 fun SubCategorySelector(
     subCategories: List<String>,
     selectedSubCategory: String?,
     onSubCategorySelected: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "选择子分类",
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(12.dp))
         SubCategoryGrid(
@@ -455,20 +360,19 @@ fun SubCategoryGrid(
     onSubCategorySelected: (String) -> Unit
 ) {
     val rows = subCategories.chunked(4)
-    Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { subCategory ->
-                    SubCategoryItem(
-                        subCategory = subCategory,
+                    GlassChip(
+                        label = subCategory,
                         isSelected = selectedSubCategory == subCategory,
                         onClick = { onSubCategorySelected(subCategory) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        isSmall = true
                     )
                 }
                 repeat(4 - row.size) {
@@ -480,45 +384,48 @@ fun SubCategoryGrid(
 }
 
 @Composable
-fun SubCategoryItem(
-    subCategory: String,
+fun GlassChip(
+    label: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSmall: Boolean = false
 ) {
-    Card(
-        onClick = onClick,
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.tertiaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .then(
+                if (isSelected) {
+                    Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                } else {
+                    Modifier.background(GlassColors.glassCardBackground)
+                }
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(
+                horizontal = if (isSmall) 6.dp else 8.dp,
+                vertical = if (isSmall) 8.dp else 10.dp
+            )
         ) {
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                    modifier = Modifier.size(16.dp)
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(if (isSmall) 14.dp else 16.dp)
                 )
+                Spacer(modifier = Modifier.height(2.dp))
             }
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = subCategory,
-                fontSize = 12.sp,
+                text = label,
+                fontSize = if (isSmall) 12.sp else 13.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                 color = if (isSelected) {
-                    MaterialTheme.colorScheme.onTertiaryContainer
+                    MaterialTheme.colorScheme.primary
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
@@ -527,38 +434,44 @@ fun SubCategoryItem(
     }
 }
 
-/**
- * 备注输入框
- */
 @Composable
 fun NoteInput(
     note: String,
     onNoteChange: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "备注（可选）",
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(12.dp))
-        OutlinedTextField(
-            value = note,
-            onValueChange = onNoteChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("添加备注...") },
-            minLines = 3,
-            maxLines = 5,
-            shape = RoundedCornerShape(12.dp)
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(GlassColors.glassCardBackground)
+        ) {
+            OutlinedTextField(
+                value = note,
+                onValueChange = onNoteChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("添加备注...") },
+                minLines = 3,
+                maxLines = 5,
+                shape = RoundedCornerShape(16.dp),
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent
+                )
+            )
+        }
     }
 }
 
-/**
- * 保存按钮
- */
 @Composable
 fun SaveButton(
     enabled: Boolean,
@@ -569,8 +482,13 @@ fun SaveButton(
         enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
-        shape = RoundedCornerShape(12.dp)
+            .height(54.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = Color.White,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+        )
     ) {
         Text(
             text = "保存",

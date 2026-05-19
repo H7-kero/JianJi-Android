@@ -13,12 +13,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.repository.TransactionRepository
+import com.jianji.app.ui.theme.GlassColors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -57,26 +60,30 @@ fun ConfirmTransactionScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f))
+            .background(Color.Black.copy(alpha = 0.4f))
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ) { onDismiss() }
+            .padding(20.dp)
     ) {
-        Card(
+        Box(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
+                .fillMaxWidth()
                 .wrapContentHeight()
                 .align(Alignment.Center)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.1f),
+                    spotColor = Color.Black.copy(alpha = 0.1f)
+                )
+                .clip(RoundedCornerShape(24.dp))
+                .background(GlassColors.glassCardBackground)
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
-                ) {},
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {}
         ) {
             Column(
                 modifier = Modifier
@@ -96,43 +103,68 @@ fun ConfirmTransactionScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    FilterChip(
-                        selected = selectedType == "expense",
-                        onClick = {
-                            if (selectedType != "expense") {
-                                selectedType = "expense"
-                                selectedCategory = "其他"
-                                selectedSubCategory = null
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(
+                                if (selectedType == "expense")
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.10f)
+                                else GlassColors.glassSurfaceVariant
+                            )
+                            .clickable {
+                                if (selectedType != "expense") {
+                                    selectedType = "expense"
+                                    selectedCategory = "其他"
+                                    selectedSubCategory = null
+                                }
                             }
-                        },
-                        label = { Text("支出") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.error,
-                            selectedLabelColor = Color.White
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "支出",
+                            fontWeight = if (selectedType == "expense") FontWeight.Bold else FontWeight.Normal,
+                            color = if (selectedType == "expense") MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 15.sp
                         )
-                    )
-                    FilterChip(
-                        selected = selectedType == "income",
-                        onClick = {
-                            if (selectedType != "income") {
-                                selectedType = "income"
-                                selectedCategory = "其他"
-                                selectedSubCategory = null
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(
+                                if (selectedType == "income")
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                else GlassColors.glassSurfaceVariant
+                            )
+                            .clickable {
+                                if (selectedType != "income") {
+                                    selectedType = "income"
+                                    selectedCategory = "其他"
+                                    selectedSubCategory = null
+                                }
                             }
-                        },
-                        label = { Text("收入") },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = Color.White
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "收入",
+                            fontWeight = if (selectedType == "income") FontWeight.Bold else FontWeight.Normal,
+                            color = if (selectedType == "income") MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 15.sp
                         )
-                    )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "¥${formatAmount(amount)}",
-                    fontSize = 36.sp,
+                    text = "¥${formatConfirmAmount(amount)}",
+                    fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (selectedType == "expense") {
                         MaterialTheme.colorScheme.error
@@ -142,7 +174,7 @@ fun ConfirmTransactionScreen(
                 )
 
                 if (merchant != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "收款方：$merchant",
                         fontSize = 14.sp,
@@ -150,7 +182,7 @@ fun ConfirmTransactionScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 if (selectedType == "expense") {
                     Text(
@@ -159,19 +191,32 @@ fun ConfirmTransactionScreen(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         channels.forEach { ch ->
-                            FilterChip(
-                                selected = selectedChannel == ch,
-                                onClick = { selectedChannel = ch },
-                                label = { Text(ch, fontSize = 13.sp) }
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        if (selectedChannel == ch) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                        else GlassColors.glassSurfaceVariant
+                                    )
+                                    .clickable { selectedChannel = ch }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    ch,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (selectedChannel == ch) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (selectedChannel == ch) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 Text(
@@ -180,11 +225,11 @@ fun ConfirmTransactionScreen(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 if (showCategorySelector) {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         categories.chunked(4).forEach { row ->
                             Row(
@@ -192,17 +237,32 @@ fun ConfirmTransactionScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 row.forEach { cat ->
-                                    FilterChip(
-                                        selected = selectedCategory == cat,
-                                        onClick = {
-                                            selectedCategory = cat
-                                            val defaults = mapOf("餐饮" to "早餐", "交通" to "充电")
-                                            selectedSubCategory = defaults[cat]
-                                            showCategorySelector = false
-                                        },
-                                        label = { Text(cat, fontSize = 12.sp) },
-                                        modifier = Modifier.weight(1f)
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(
+                                                if (selectedCategory == cat)
+                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                                else GlassColors.glassSurfaceVariant
+                                            )
+                                            .clickable {
+                                                selectedCategory = cat
+                                                val defaults = mapOf("餐饮" to "早餐", "交通" to "充电")
+                                                selectedSubCategory = defaults[cat]
+                                                showCategorySelector = false
+                                            }
+                                            .padding(vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            cat,
+                                            fontSize = 13.sp,
+                                            fontWeight = if (selectedCategory == cat) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (selectedCategory == cat) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                                 repeat(4 - row.size) {
                                     Spacer(modifier = Modifier.weight(1f))
@@ -211,84 +271,24 @@ fun ConfirmTransactionScreen(
                         }
                     }
                 } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(GlassColors.glassSurfaceVariant)
                             .clickable { showCategorySelector = true }
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
                     ) {
-                        Text(
-                            text = selectedCategory,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "修改",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                if (availableSubCategories != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "子分类",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (showSubCategorySelector) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            availableSubCategories.chunked(4).forEach { row ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    row.forEach { sub ->
-                                        FilterChip(
-                                            selected = selectedSubCategory == sub,
-                                            onClick = {
-                                                selectedSubCategory = sub
-                                                showSubCategorySelector = false
-                                            },
-                                            label = { Text(sub, fontSize = 12.sp) },
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    repeat(4 - row.size) {
-                                        Spacer(modifier = Modifier.weight(1f))
-                                    }
-                                }
-                            }
-                        }
-                    } else {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showSubCategorySelector = true }
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = selectedSubCategory ?: "未选择",
+                                text = selectedCategory,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
-                                modifier = Modifier.weight(1f)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "修改",
@@ -299,50 +299,138 @@ fun ConfirmTransactionScreen(
                     }
                 }
 
+                if (availableSubCategories != null) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = "子分类",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    if (showSubCategorySelector) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            availableSubCategories.chunked(4).forEach { row ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    row.forEach { sub ->
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(
+                                                    if (selectedSubCategory == sub)
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                                    else GlassColors.glassSurfaceVariant
+                                                )
+                                                .clickable {
+                                                    selectedSubCategory = sub
+                                                    showSubCategorySelector = false
+                                                }
+                                                .padding(vertical = 10.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                sub,
+                                                fontSize = 12.sp,
+                                                fontWeight = if (selectedSubCategory == sub) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (selectedSubCategory == sub) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                    repeat(4 - row.size) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(GlassColors.glassSurfaceVariant)
+                                .clickable { showSubCategorySelector = true }
+                                .padding(horizontal = 16.dp, vertical = 14.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = selectedSubCategory ?: "未选择",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "修改",
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(28.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(12.dp)
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(GlassColors.glassSurfaceVariant)
+                            .clickable { onDismiss() },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("取消", fontSize = 16.sp)
+                        Text("取消", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                     }
 
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                val transaction = Transaction(
-                                    amount = amount,
-                                    category = selectedCategory,
-                                    subCategory = selectedSubCategory,
-                                    channel = if (selectedType == "expense") selectedChannel else null,
-                                    type = selectedType,
-                                    merchant = merchant,
-                                    source = "auto"
-                                )
-                                repository.insertTransaction(transaction)
-                                onDismiss()
-                            }
-                        },
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp),
-                        shape = RoundedCornerShape(12.dp)
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(MaterialTheme.colorScheme.primary)
+                            .clickable {
+                                coroutineScope.launch {
+                                    val transaction = Transaction(
+                                        amount = amount,
+                                        category = selectedCategory,
+                                        subCategory = selectedSubCategory,
+                                        channel = if (selectedType == "expense") selectedChannel else null,
+                                        type = selectedType,
+                                        merchant = merchant,
+                                        source = "auto"
+                                    )
+                                    repository.insertTransaction(transaction)
+                                    onDismiss()
+                                }
+                            },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("保存", fontSize = 16.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("保存", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
                     }
                 }
             }
@@ -350,7 +438,7 @@ fun ConfirmTransactionScreen(
     }
 }
 
-private fun formatAmount(amount: Double): String {
+private fun formatConfirmAmount(amount: Double): String {
     return if (amount == amount.toLong().toDouble()) {
         amount.toLong().toString()
     } else {
