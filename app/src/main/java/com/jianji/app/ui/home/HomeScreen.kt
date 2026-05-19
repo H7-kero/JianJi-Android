@@ -1,9 +1,11 @@
 package com.jianji.app.ui.home
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -74,8 +76,18 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                items(transactions) { transaction ->
-                    TransactionItem(transaction)
+                itemsIndexed(transactions) { index, transaction ->
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(
+                            animationSpec = tween(400, delayMillis = index * 60)
+                        ) + slideInVertically(
+                            initialOffsetY = { it / 6 },
+                            animationSpec = tween(400, delayMillis = index * 60)
+                        )
+                    ) {
+                        TransactionItem(transaction)
+                    }
                 }
             }
         }
