@@ -75,6 +75,16 @@ class TransactionRepository @Inject constructor(
     }
 
     /**
+     * 获取指定月份的所有交易记录
+     * @param year 年份
+     * @param month 月份，1-12
+     */
+    fun getMonthlyTransactions(year: Int, month: Int): Flow<List<Transaction>> {
+        val (startTime, endTime) = getMonthTimeRange(year, month)
+        return transactionDao.getTransactionsByDateRange(startTime, endTime)
+    }
+
+    /**
      * 获取月度支出
      * @param year 年份，如 2026
      * @param month 月份，1-12
