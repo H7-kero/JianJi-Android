@@ -1,5 +1,7 @@
 package com.jianji.app
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -72,20 +74,34 @@ fun ConfirmTransactionScreen(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .align(Alignment.Center)
-                .shadow(
-                    elevation = 20.dp,
-                    shape = RoundedCornerShape(24.dp),
-                    ambientColor = Color.Black.copy(alpha = 0.1f),
-                    spotColor = Color.Black.copy(alpha = 0.1f)
-                )
-                .clip(RoundedCornerShape(24.dp))
-                .background(GlassColors.glassCardBackground)
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ) {}
         ) {
-            Column(
+            AnimatedVisibility(
+                visible = true,
+                enter = scaleIn(
+                    initialScale = 0.92f,
+                    animationSpec = tween(400)
+                ) + fadeIn(animationSpec = tween(350)),
+                exit = scaleOut(
+                    targetScale = 0.95f,
+                    animationSpec = tween(250)
+                ) + fadeOut(animationSpec = tween(200))
+            ) {
+            Box(
+                modifier = Modifier
+                    .shadow(
+                        elevation = 20.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        ambientColor = Color.Black.copy(alpha = 0.1f),
+                        spotColor = Color.Black.copy(alpha = 0.1f)
+                    )
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(GlassColors.glassCardBackground)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {}
+            ) {
+                Column(
                 modifier = Modifier
                     .padding(24.dp)
                     .verticalScroll(rememberScrollState())
@@ -433,6 +449,8 @@ fun ConfirmTransactionScreen(
                         }
                     }
                 }
+            }
+        }
             }
         }
     }
