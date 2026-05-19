@@ -1,0 +1,296 @@
+package com.jianji.app.ui.profile
+
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+
+private val Context.dataStore by preferencesDataStore(name = "auto_accounting")
+
+object AutoAccountingPreferences {
+    private val KEY_AUTO_ACCOUNTING = booleanPreferencesKey("auto_accounting_enabled")
+
+    fun isAutoAccountingEnabled(context: Context): Flow<Boolean> {
+        return context.dataStore.data.map { preferences ->
+            preferences[KEY_AUTO_ACCOUNTING] ?: false
+        }
+    }
+
+    suspend fun setAutoAccountingEnabled(context: Context, enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_AUTO_ACCOUNTING] = enabled
+        }
+    }
+}
+
+fun isAccessibilityServiceEnabled(context: Context): Boolean {
+    val service = "${context.packageName}/com.jianji.app.service.AutoAccountingService"
+    val enabledServices = Settings.Secure.getString(
+        context.contentResolver,
+        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+    ) ?: return false
+    return enabledServices.split(':').any { it.equals(service, ignoreCase = true) }
+}
+
+fun openAccessibilitySettings(context: Context) {
+    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
+}
+
+@Composable
+fun ProfileScreen() {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val autoAccountingEnabled by AutoAccountingPreferences
+        .isAutoAccountingEnabled(context)
+        .collectAsState(initial = false)
+
+    val isServiceEnabled = remember(autoAccountingEnabled) {
+        if (autoAccountingEnabled) isAccessibilityServiceEnabled(context) else false
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "我的",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(modifier = Modifier.padding(4.dp)) {
+                AutoAccountingItem(
+                    icon = Icons.Default.FlashOn,
+                    title = "自动记账",
+                    subtitle = if (isServiceEnabled) "已开启，支付后自动弹出确认" else "开启后支付完成自动弹出记账确认",
+                    checked = autoAccountingEnabled,
+                    onCheckedChange = { checked ->
+                        coroutineScope.launch(Dispatchers.IO) {
+                            AutoAccountingPreferences.setAutoAccountingEnabled(context, checked)
+                        }
+                        if (checked && !isAccessibilityServiceEnabled(context)) {
+                            openAccessibilitySettings(context)
+                        }
+                    }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                ProfileMenuItem(
+                    icon = Icons.Default.Settings,
+                    title = "无障碍设置",
+                    subtitle = "管理自动记账无障碍权限",
+                    onClick = { openAccessibilitySettings(context) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "使用说明",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                InstructionItem(
+                    number = "1",
+                    text = "开启自动记账开关，系统会引导您授予无障碍权限"
+                )
+                InstructionItem(
+                    number = "2",
+                    text = "授权后，当您在微信、支付宝或京东完成支付时，会自动弹出记账确认窗口"
+                )
+                InstructionItem(
+                    number = "3",
+                    text = "确认信息无误后点击保存，交易将自动记录；点击取消则放弃本次记账"
+                )
+                InstructionItem(
+                    number = "4",
+                    text = "可在确认窗口中重新选择分类和子分类，匹配您的实际消费类型"
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun AutoAccountingItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+private fun ProfileMenuItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+@Composable
+private fun InstructionItem(
+    number: String,
+    text: String
+) {
+    Row(
+        verticalAlignment = Alignment.Top
+    ) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = number,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            lineHeight = 20.sp
+        )
+    }
+}

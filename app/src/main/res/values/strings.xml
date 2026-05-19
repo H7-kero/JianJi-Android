@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    字符串资源文件
-    定义应用中使用的文本
-    方便多语言支持和统一管理
--->
 <resources>
-    <!-- 应用名称 -->
     <string name="app_name">简记</string>
     
-    <!-- 导航标签 -->
     <string name="nav_home">首页</string>
     <string name="nav_record">记账</string>
     <string name="nav_report">报表</string>
     <string name="nav_profile">我的</string>
     
-    <!-- 首页 -->
     <string name="today_expense">今日支出</string>
     <string name="today_income">今日收入</string>
     <string name="recent_transactions">今日交易</string>
     <string name="no_transactions">暂无交易记录</string>
+
+    <string name="auto_accounting_description">用于自动识别微信、支付宝、京东等支付平台的交易信息，实现自动记账功能</string>
 </resources>

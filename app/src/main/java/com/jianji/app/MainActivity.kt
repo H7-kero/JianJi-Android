@@ -1,8 +1,3 @@
-/**
- * 主 Activity
- * 
- * 作用：应用的入口界面，包含底部导航和页面切换
- */
 package com.jianji.app
 
 import android.os.Bundle
@@ -34,22 +29,18 @@ import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
 import com.jianji.app.ui.record.RecordScreen
 import com.jianji.app.ui.record.RecordViewModel
+import com.jianji.app.ui.profile.ProfileScreen
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 
-/**
- * 主 Activity
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // 创建数据库实例
         val database = AppDatabase.getDatabase(this)
         val transactionDao = database.transactionDao()
         val repository = TransactionRepository(transactionDao)
         
-        // 设置 Compose 内容
         setContent {
             MaterialTheme {
                 JianJiApp(repository)
@@ -58,9 +49,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * 简记应用主界面
- */
 @Composable
 fun JianJiApp(repository: TransactionRepository) {
     val navController = rememberNavController()
@@ -88,15 +76,12 @@ fun JianJiApp(repository: TransactionRepository) {
                 ReportScreen(viewModel)
             }
             composable(Screen.Profile.route) {
-                PlaceholderScreen("我的")
+                ProfileScreen()
             }
         }
     }
 }
 
-/**
- * 底部导航栏
- */
 @Composable
 fun BottomNavigationBar(navController: androidx.navigation.NavController) {
     val items = listOf(
@@ -131,9 +116,6 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
     }
 }
 
-/**
- * 页面定义
- */
 sealed class Screen(val route: String, val label: String) {
     data object Home : Screen("home", "首页")
     data object Record : Screen("record", "记账")
@@ -141,9 +123,6 @@ sealed class Screen(val route: String, val label: String) {
     data object Profile : Screen("profile", "我的")
 }
 
-/**
- * 占位页面
- */
 @Composable
 fun PlaceholderScreen(name: String) {
     Box(
