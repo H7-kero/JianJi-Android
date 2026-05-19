@@ -336,32 +336,23 @@ fun CategoryItem(
 }
 
 /**
- * 子分类选择器
+ * 子分类选择器（必选）
  */
 @Composable
 fun SubCategorySelector(
     subCategories: List<String>,
     selectedSubCategory: String?,
-    onSubCategorySelected: (String?) -> Unit
+    onSubCategorySelected: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "选择子分类（可选）",
+            text = "选择子分类",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(12.dp))
-        FilterChip(
-            selected = selectedSubCategory == null,
-            onClick = { onSubCategorySelected(null) },
-            label = { Text("不选择子分类") },
-            leadingIcon = if (selectedSubCategory == null) {
-                { Icon(Icons.Default.Check, contentDescription = null) }
-            } else null
-        )
-        Spacer(modifier = Modifier.height(8.dp))
         SubCategoryGrid(
             subCategories = subCategories,
             selectedSubCategory = selectedSubCategory,

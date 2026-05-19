@@ -57,11 +57,24 @@ class RecordViewModel(
         "工资", "奖金", "投资", "兼职", "其他"
     )
 
-    // 子分类映射
+    // 子分类映射（末尾都有"其他"选项）
     val subCategories = mapOf(
-        "餐饮" to listOf("早餐", "午餐", "晚餐", "宵夜", "饮料", "零食", "水果"),
-        "交通" to listOf("充电", "停车费", "过路费", "地铁", "打车", "自行车")
+        "餐饮" to listOf("早餐", "午餐", "晚餐", "宵夜", "饮料", "零食", "水果", "其他"),
+        "交通" to listOf("充电", "停车费", "过路费", "地铁", "打车", "自行车", "其他")
     )
+
+    // 分类默认子分类
+    private val defaultSubCategories = mapOf(
+        "餐饮" to "早餐",
+        "交通" to "充电"
+    )
+
+    /**
+     * 获取某个分类的子分类列表
+     */
+    fun getSubCategoriesForCategory(category: String): List<String> {
+        return subCategories[category] ?: emptyList()
+    }
 
     /**
      * 更新交易类型
@@ -80,12 +93,15 @@ class RecordViewModel(
     }
 
     /**
-     * 选择分类
+     * 选择分类（必选子分类）
      */
     fun selectCategory(category: String) {
         _selectedCategory.value = category
-        // 清除之前选择的子分类
-        _selectedSubCategory.value = null
+        // 自动设置默认子分类
+        val defaultSub = defaultSubCategories[category]
+        if (defaultSub != null) {
+            _selectedSubCategory.value = defaultSub
+        }
     }
 
     /**
