@@ -14,8 +14,6 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    // 强制所有模块使用统一的仓库配置，防止子模块私自添加仓库
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
