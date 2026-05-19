@@ -72,7 +72,7 @@ android {
     // Compose 编译器选项
     composeOptions {
         // Compose 编译器版本，必须与 Kotlin 2.0.x 兼容
-        kotlinCompilerExtensionVersion = "1.6.1"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 }
 
@@ -90,7 +90,7 @@ dependencies {
     
     // ===== Compose UI 库 =====
     // Compose BOM（Bill of Materials），统一管理 Compose 版本
-    implementation(platform("androidx.compose:compose-bom:2024.10.00"))
+    implementation(platform("androidx.compose:compose-bom:2024.09.01"))
     
     // Compose UI 核心
     implementation("androidx.compose.ui:ui")
