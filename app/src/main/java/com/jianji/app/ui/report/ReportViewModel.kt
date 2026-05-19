@@ -9,21 +9,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.repository.TransactionRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import javax.inject.Inject
 
 /**
  * 报表 ViewModel
  * 
  * @param repository 交易数据仓库
  */
-@HiltViewModel
-class ReportViewModel @Inject constructor(
+class ReportViewModel(
     private val repository: TransactionRepository
 ) : ViewModel() {
 

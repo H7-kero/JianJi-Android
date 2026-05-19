@@ -2,8 +2,6 @@
  * 主 Activity
  * 
  * 作用：应用的入口界面，包含底部导航和页面切换
- * 
- * @AndroidEntryPoint 标记这个 Activity 可以使用 Hilt 依赖注入
  */
 package com.jianji.app
 
@@ -30,30 +28,34 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jianji.app.data.local.AppDatabase
+import com.jianji.app.data.local.TransactionDao
+import com.jianji.app.data.repository.TransactionRepository
 import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
 import com.jianji.app.ui.record.RecordScreen
 import com.jianji.app.ui.record.RecordViewModel
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 
 /**
  * 主 Activity
- * 
- * ComponentActivity 是新版 Android 推荐的 Activity 基类
- * 支持 Compose 和其他现代 Android 特性
  */
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 创建数据库实例
+        val database = AppDatabase.getDatabase(this)
+        val transactionDao = database.transactionDao()
+        val repository = TransactionRepository(transactionDao)
+        
         // 设置 Compose 内容
         setContent {
-            // 使用 Material 3 主题
             MaterialTheme {
-                JianJiApp()
+                JianJiApp(repository)
             }
         }
     }
@@ -61,47 +63,54 @@ class MainActivity : ComponentActivity() {
 
 /**
  * 简记应用主界面
- * 
- * 包含：
- * - 底部导航栏（首页、记账、报表、我的）
- * - 页面导航（使用 Jetpack Navigation）
  */
 @Composable
-fun JianJiApp() {
-    // 创建导航控制器，管理页面跳转
+fun JianJiApp(repository: TransactionRepository) {
     val navController = rememberNavController()
 
-    // Scaffold 是 Material 3 提供的页面布局框架
-    // 包含顶部栏、底部栏、内容区域等
     Scaffold(
         bottomBar = {
-            // 底部导航栏
             BottomNavigationBar(navController)
         }
     ) { padding ->
-        // 导航宿主，管理各个页面
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,  // 默认显示首页
-            modifier = Modifier.padding(padding)   // 避开底部导航栏
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(padding)
         ) {
-            // 首页
             composable(Screen.Home.route) {
-                // 获取 HomeViewModel 实例（Hilt 自动注入）
-                val viewModel: HomeViewModel = viewModel()
+                val viewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return HomeViewModel(repository) as T
+                        }
+                    }
+                )
                 HomeScreen(viewModel)
             }
-            // 记账页
             composable(Screen.Record.route) {
-                val viewModel: RecordViewModel = viewModel()
+                val viewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return RecordViewModel(repository) as T
+                        }
+                    }
+                )
                 RecordScreen(viewModel)
             }
-            // 报表页
             composable(Screen.Report.route) {
-                val viewModel: ReportViewModel = viewModel()
+                val viewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        @Suppress("UNCHECKED_CAST")
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return ReportViewModel(repository) as T
+                        }
+                    }
+                )
                 ReportScreen(viewModel)
             }
-            // 我的页（占位）
             composable(Screen.Profile.route) {
                 PlaceholderScreen("我的")
             }
@@ -111,12 +120,9 @@ fun JianJiApp() {
 
 /**
  * 底部导航栏
- * 
- * @param navController 导航控制器，用于页面跳转
  */
 @Composable
 fun BottomNavigationBar(navController: androidx.navigation.NavController) {
-    // 导航项列表：页面、图标、标签
     val items = listOf(
         Triple(Screen.Home, Icons.Default.Home, "首页"),
         Triple(Screen.Record, Icons.Default.AddCircle, "记账"),
@@ -124,32 +130,24 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
         Triple(Screen.Profile, Icons.Default.Person, "我的")
     )
 
-    // Material 3 底部导航栏组件
     NavigationBar {
-        // 获取当前导航状态
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
-        // 遍历所有导航项
         items.forEach { (screen, icon, label) ->
             NavigationBarItem(
-                // 图标
                 icon = { Icon(icon, contentDescription = label) },
-                // 标签
                 label = { Text(label) },
-                // 是否选中：当前页面是否匹配
                 selected = currentDestination?.hierarchy?.any { 
                     it.route == screen.route 
                 } == true,
-                // 点击事件
                 onClick = {
                     navController.navigate(screen.route) {
-                        // 弹出到起始页面，避免页面堆叠
                         popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true  // 保存页面状态
+                            saveState = true
                         }
-                        launchSingleTop = true   // 避免重复创建页面
-                        restoreState = true      // 恢复页面状态
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 }
             )
@@ -159,9 +157,6 @@ fun BottomNavigationBar(navController: androidx.navigation.NavController) {
 
 /**
  * 页面定义
- * 
- * sealed class 表示密封类，所有子类都在这里定义
- * 用于定义导航页面的路由和标签
  */
 sealed class Screen(val route: String, val label: String) {
     data object Home : Screen("home", "首页")
@@ -172,9 +167,6 @@ sealed class Screen(val route: String, val label: String) {
 
 /**
  * 占位页面
- * 
- * 用于显示尚未开发的页面
- * @param name 页面名称
  */
 @Composable
 fun PlaceholderScreen(name: String) {
