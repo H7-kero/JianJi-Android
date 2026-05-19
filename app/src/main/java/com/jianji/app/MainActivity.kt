@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +45,7 @@ import com.jianji.app.ui.profile.ProfileScreen
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.GlassColors
+import com.jianji.app.ui.theme.iOSColorTransition
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,31 +81,31 @@ fun JianJiApp(repository: TransactionRepository) {
             modifier = Modifier.padding(padding),
             enterTransition = {
                 fadeIn(
-                    animationSpec = tween(300, delayMillis = 100)
+                    animationSpec = tween(300, delayMillis = 80)
                 ) + slideInHorizontally(
                     initialOffsetX = { it / 8 },
-                    animationSpec = tween(350)
+                    animationSpec = tween(350, easing = androidx.compose.animation.core.FastOutSlowInEasing)
                 )
             },
             exitTransition = {
                 fadeOut(animationSpec = tween(200)) +
                         slideOutHorizontally(
                             targetOffsetX = { -it / 8 },
-                            animationSpec = tween(250)
+                            animationSpec = tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing)
                         )
             },
             popEnterTransition = {
                 fadeIn(animationSpec = tween(250)) +
                         slideInHorizontally(
                             initialOffsetX = { -it / 8 },
-                            animationSpec = tween(300)
+                            animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
                         )
             },
             popExitTransition = {
                 fadeOut(animationSpec = tween(200)) +
                         slideOutHorizontally(
                             targetOffsetX = { it / 8 },
-                            animationSpec = tween(300)
+                            animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
                         )
             }
         ) {
@@ -165,10 +166,18 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
                     it.route == item.screen.route
                 } == true
 
-                val indicatorWidth by animateFloatAsState(
-                    targetValue = if (selected) 1f else 0f,
-                    animationSpec = tween(300),
-                    label = "nav_indicator"
+                val capsuleBackground by animateColorAsState(
+                    targetValue = if (selected) Color.Black.copy(alpha = 0.065f)
+                    else Color.Transparent,
+                    animationSpec = iOSColorTransition,
+                    label = "nav_capsule_bg"
+                )
+
+                val iconTint by animateColorAsState(
+                    targetValue = if (selected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    animationSpec = iOSColorTransition,
+                    label = "nav_icon_tint"
                 )
 
                 Box(
@@ -176,10 +185,7 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
                         .weight(1f)
                         .padding(horizontal = 3.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            if (selected) Color.Black.copy(alpha = 0.06f)
-                            else Color.Transparent
-                        )
+                        .background(capsuleBackground)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
@@ -197,26 +203,40 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(horizontal = if (selected) 14.dp else 6.dp)
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
                             imageVector = item.icon,
                             contentDescription = item.label,
-                            tint = if (selected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = iconTint,
                             modifier = Modifier.size(22.dp)
                         )
-                        if (selected) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = item.label,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center,
-                                softWrap = false
-                            )
+                        AnimatedVisibility(
+                            visible = selected,
+                            enter = fadeIn(animationSpec = tween(250, delayMillis = 80)) +
+                                    slideInHorizontally(
+                                        initialOffsetX = { it / 3 },
+                                        animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                                    ),
+                            exit = fadeOut(animationSpec = tween(150)) +
+                                    slideOutHorizontally(
+                                        targetOffsetX = { -it / 3 },
+                                        animationSpec = tween(200, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                                    )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = item.label,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textAlign = TextAlign.Center,
+                                    softWrap = false
+                                )
+                            }
                         }
                     }
                 }
