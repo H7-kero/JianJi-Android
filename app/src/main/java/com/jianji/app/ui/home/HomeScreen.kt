@@ -32,6 +32,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
             .background(GlassColors.glassBackground)
             .padding(horizontal = 20.dp)
             .padding(top = 16.dp)
+            .padding(bottom = 72.dp)
     ) {
         Text(
             text = "简记",

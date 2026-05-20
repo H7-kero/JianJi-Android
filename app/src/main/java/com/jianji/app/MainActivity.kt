@@ -5,26 +5,32 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,12 +45,15 @@ import com.jianji.app.data.local.AppDatabase
 import com.jianji.app.data.repository.TransactionRepository
 import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
-import com.jianji.app.ui.record.RecordScreen
-import com.jianji.app.ui.record.RecordViewModel
+import com.jianji.app.ui.profile.FabPreferences
 import com.jianji.app.ui.profile.ProfileScreen
+import com.jianji.app.ui.record.RecordBottomSheet
+import com.jianji.app.ui.record.RecordViewModel
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.GlassColors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,67 +72,141 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JianJiApp(repository: TransactionRepository) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val recordViewModel = remember { RecordViewModel(repository) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    Scaffold(
-        modifier = Modifier.navigationBarsPadding(),
-        bottomBar = {
-            FloatingGlassNavBar(navController)
-        },
-        containerColor = GlassColors.glassBackground
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(padding),
-            enterTransition = {
-                fadeIn(
-                    animationSpec = tween(300, delayMillis = 80)
-                ) + slideInHorizontally(
-                    initialOffsetX = { it / 8 },
-                    animationSpec = tween(350, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-                )
+    var showRecordSheet by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var fabVisible by remember { androidx.compose.runtime.mutableStateOf(true) }
+
+    val fabPosition by FabPreferences
+        .getFabPosition(context)
+        .collectAsState(initial = "left")
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    LaunchedEffect(currentRoute) {
+        fabVisible = currentRoute == Screen.Home.route
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.navigationBarsPadding(),
+            bottomBar = {
+                FloatingGlassNavBar(navController)
             },
-            exitTransition = {
-                fadeOut(animationSpec = tween(200)) +
-                        slideOutHorizontally(
-                            targetOffsetX = { -it / 8 },
-                            animationSpec = tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-                        )
-            },
-            popEnterTransition = {
-                fadeIn(animationSpec = tween(250)) +
-                        slideInHorizontally(
-                            initialOffsetX = { -it / 8 },
-                            animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-                        )
-            },
-            popExitTransition = {
-                fadeOut(animationSpec = tween(200)) +
-                        slideOutHorizontally(
-                            targetOffsetX = { it / 8 },
-                            animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-                        )
-            }
-        ) {
-            composable(Screen.Home.route) {
-                val viewModel = HomeViewModel(repository)
-                HomeScreen(viewModel)
-            }
-            composable(Screen.Record.route) {
-                val viewModel = RecordViewModel(repository)
-                RecordScreen(viewModel)
-            }
-            composable(Screen.Report.route) {
-                val viewModel = ReportViewModel(repository)
-                ReportScreen(viewModel)
-            }
-            composable(Screen.Profile.route) {
-                ProfileScreen()
+            containerColor = GlassColors.glassBackground
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                modifier = Modifier.padding(padding),
+                enterTransition = {
+                    fadeIn(
+                        animationSpec = tween(300, delayMillis = 80)
+                    ) + slideInHorizontally(
+                        initialOffsetX = { it / 8 },
+                        animationSpec = tween(350, easing = FastOutSlowInEasing)
+                    )
+                },
+                exitTransition = {
+                    fadeOut(animationSpec = tween(200)) +
+                            slideOutHorizontally(
+                                targetOffsetX = { -it / 8 },
+                                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                            )
+                },
+                popEnterTransition = {
+                    fadeIn(animationSpec = tween(250)) +
+                            slideInHorizontally(
+                                initialOffsetX = { -it / 8 },
+                                animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            )
+                },
+                popExitTransition = {
+                    fadeOut(animationSpec = tween(200)) +
+                            slideOutHorizontally(
+                                targetOffsetX = { it / 8 },
+                                animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            )
+                }
+            ) {
+                composable(Screen.Home.route) {
+                    val viewModel = HomeViewModel(repository)
+                    HomeScreen(viewModel)
+                }
+                composable(Screen.Report.route) {
+                    val viewModel = ReportViewModel(repository)
+                    ReportScreen(viewModel)
+                }
+                composable(Screen.Profile.route) {
+                    ProfileScreen()
+                }
             }
         }
+
+        AnimatedVisibility(
+            visible = fabVisible,
+            enter = scaleIn(animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f)) +
+                    fadeIn(animationSpec = tween(250)),
+            exit = scaleOut(animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f)) +
+                    fadeOut(animationSpec = tween(200)),
+            modifier = Modifier
+                .align(if (fabPosition == "left") Alignment.BottomStart else Alignment.BottomEnd)
+                .padding(
+                    start = if (fabPosition == "left") 24.dp else 0.dp,
+                    end = if (fabPosition == "right") 24.dp else 0.dp,
+                    bottom = 84.dp
+                )
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        clip = false,
+                        ambientColor = Color.Black.copy(alpha = 0.10f),
+                        spotColor = Color.Black.copy(alpha = 0.10f)
+                    )
+                    .clip(CircleShape)
+                    .background(GlassColors.glassNavBackground)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        showRecordSheet = true
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "记账",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+    }
+
+    if (showRecordSheet) {
+        RecordBottomSheet(
+            viewModel = recordViewModel,
+            onDismiss = {
+                coroutineScope.launch {
+                    sheetState.hide()
+                }.invokeOnCompletion {
+                    showRecordSheet = false
+                }
+            },
+            sheetState = sheetState
+        )
     }
 }
 
@@ -131,7 +214,6 @@ fun JianJiApp(repository: TransactionRepository) {
 fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
     val items = listOf(
         NavItem(Screen.Home, Icons.Default.Home, "首页"),
-        NavItem(Screen.Record, Icons.Default.AddCircle, "记账"),
         NavItem(Screen.Report, Icons.Default.BarChart, "报表"),
         NavItem(Screen.Profile, Icons.Default.Person, "我的")
     )
@@ -168,14 +250,14 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
                 val capsuleBackground by animateColorAsState(
                     targetValue = if (selected) Color.Black.copy(alpha = 0.065f)
                     else Color.Transparent,
-                    animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    animationSpec = tween(300, easing = FastOutSlowInEasing),
                     label = "nav_capsule_bg"
                 )
 
                 val iconTint by animateColorAsState(
                     targetValue = if (selected) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant,
-                    animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                    animationSpec = tween(300, easing = FastOutSlowInEasing),
                     label = "nav_icon_tint"
                 )
 
@@ -215,12 +297,12 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
                             enter = fadeIn(animationSpec = tween(250, delayMillis = 80)) +
                                     slideInHorizontally(
                                         initialOffsetX = { it / 3 },
-                                        animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                                        animationSpec = tween(300, easing = FastOutSlowInEasing)
                                     ),
                             exit = fadeOut(animationSpec = tween(150)) +
                                     slideOutHorizontally(
                                         targetOffsetX = { -it / 3 },
-                                        animationSpec = tween(200, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                                        animationSpec = tween(200, easing = FastOutSlowInEasing)
                                     )
                         ) {
                             Row(
@@ -252,17 +334,6 @@ private data class NavItem(
 
 sealed class Screen(val route: String, val label: String) {
     data object Home : Screen("home", "首页")
-    data object Record : Screen("record", "记账")
     data object Report : Screen("report", "报表")
     data object Profile : Screen("profile", "我的")
-}
-
-@Composable
-fun PlaceholderScreen(name: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "$name 页面开发中...", fontSize = 18.sp)
-    }
 }

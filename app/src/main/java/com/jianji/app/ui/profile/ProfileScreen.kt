@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.jianji.app.ui.theme.GlassColors
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,22 @@ object AutoAccountingPreferences {
     suspend fun setAutoAccountingEnabled(context: Context, enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEY_AUTO_ACCOUNTING] = enabled
+        }
+    }
+}
+
+object FabPreferences {
+    private val KEY_FAB_POSITION = stringPreferencesKey("fab_position")
+
+    fun getFabPosition(context: Context): Flow<String> {
+        return context.dataStore.data.map { preferences ->
+            preferences[KEY_FAB_POSITION] ?: "left"
+        }
+    }
+
+    suspend fun setFabPosition(context: Context, position: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_FAB_POSITION] = position
         }
     }
 }
@@ -76,6 +93,10 @@ fun ProfileScreen() {
     val autoAccountingEnabled by AutoAccountingPreferences
         .isAutoAccountingEnabled(context)
         .collectAsState(initial = false)
+
+    val fabPosition by FabPreferences
+        .getFabPosition(context)
+        .collectAsState(initial = "left")
 
     val isServiceEnabled = remember(autoAccountingEnabled) {
         if (autoAccountingEnabled) isAccessibilityServiceEnabled(context) else false
@@ -151,6 +172,82 @@ fun ProfileScreen() {
                         subtitle = "管理自动记账无障碍权限",
                         onClick = { openAccessibilitySettings(context) }
                     )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AnimatedVisibility(
+            visible = animationStarted,
+            enter = fadeIn(animationSpec = tween(350, delayMillis = 130)) +
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(GlassColors.glassCardBackground)
+            ) {
+                Column(modifier = Modifier.padding(4.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.TouchApp,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "FAB 位置",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "记账按钮在首页的位置",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FabPositionOption(
+                            label = "左下角",
+                            isSelected = fabPosition == "left",
+                            onClick = {
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    FabPreferences.setFabPosition(context, "left")
+                                }
+                            }
+                        )
+                        FabPositionOption(
+                            label = "右下角",
+                            isSelected = fabPosition == "right",
+                            onClick = {
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    FabPreferences.setFabPosition(context, "right")
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -325,6 +422,44 @@ private fun InstructionItem(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
             lineHeight = 20.sp
+        )
+    }
+}
+
+@Composable
+private fun FabPositionOption(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val bgColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+        else GlassColors.glassCardBackground,
+        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        label = "fab_option_bg"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        label = "fab_option_text"
+    )
+
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .clip(RoundedCornerShape(12.dp))
+            .background(bgColor)
+            .clickable { onClick() }
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = textColor
         )
     }
 }
