@@ -1,10 +1,14 @@
 package com.jianji.app.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
+import com.jianji.app.ui.theme.LiquidGlassShapes
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,44 +53,41 @@ fun HomeScreen(viewModel: HomeViewModel) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        TodaySummaryCard(
-            expense = todayExpense,
-            income = todayIncome
-        )
+        TodaySummaryCard(expense = todayExpense, income = todayIncome)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "今日交易",
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(bottom = 12.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        if (transactions.isEmpty()) {
-            if (hasLoaded) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "暂无交易记录",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 15.sp
-                    )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (transactions.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "今天还没有交易记录",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 96.dp)
-            ) {
-                itemsIndexed(transactions, key = { _, tx -> tx.id }) { _, transaction ->
-                    TransactionItem(transaction, timeFormat)
+            } else {
+                itemsIndexed(transactions, key = { _, tx -> tx.id }) { _, tx ->
+                    TransactionItem(transaction = tx, timeFormat = timeFormat)
                 }
             }
         }
@@ -97,8 +99,27 @@ fun TodaySummaryCard(expense: Double, income: Double) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(GlassColors.glassCardBackground)
+            .shadow(
+                elevation = 4.dp,
+                shape = LiquidGlassShapes.card,
+                clip = false,
+                ambientColor = GlassColors.glassShadow,
+                spotColor = GlassColors.glassShadow
+            )
+            .clip(LiquidGlassShapes.card)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GlassColors.glassHighlight,
+                        GlassColors.glassCardBackground
+                    )
+                )
+            )
+            .border(
+                width = 0.5.dp,
+                color = Color.Black.copy(alpha = 0.06f),
+                shape = LiquidGlassShapes.card
+            )
     ) {
         Row(
             modifier = Modifier
@@ -139,7 +160,7 @@ fun TodaySummaryCard(expense: Double, income: Double) {
                     text = "¥${formatHomeAmount(income)}",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = GlassColors.iosBlue
                 )
             }
         }
@@ -151,8 +172,27 @@ fun TransactionItem(transaction: Transaction, timeFormat: SimpleDateFormat) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(GlassColors.glassCardBackground)
+            .shadow(
+                elevation = 2.dp,
+                shape = LiquidGlassShapes.medium,
+                clip = false,
+                ambientColor = GlassColors.glassShadow,
+                spotColor = GlassColors.glassShadow
+            )
+            .clip(LiquidGlassShapes.medium)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GlassColors.glassHighlight,
+                        GlassColors.glassCardBackground
+                    )
+                )
+            )
+            .border(
+                width = 0.5.dp,
+                color = Color.Black.copy(alpha = 0.06f),
+                shape = LiquidGlassShapes.medium
+            )
     ) {
         Row(
             modifier = Modifier
@@ -210,7 +250,7 @@ fun TransactionItem(transaction: Transaction, timeFormat: SimpleDateFormat) {
                 color = if (transaction.type == "expense") {
                     MaterialTheme.colorScheme.error
                 } else {
-                    MaterialTheme.colorScheme.primary
+                    GlassColors.iosBlue
                 }
             )
         }
