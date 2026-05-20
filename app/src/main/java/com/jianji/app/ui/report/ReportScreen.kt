@@ -3,11 +3,14 @@ package com.jianji.app.ui.report
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -26,6 +29,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
+import com.jianji.app.ui.theme.LiquidGlassShapes
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -88,8 +92,27 @@ fun ReportScreen(viewModel: ReportViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(GlassColors.glassCardBackground)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = LiquidGlassShapes.card,
+                    clip = false,
+                    ambientColor = GlassColors.glassShadow,
+                    spotColor = GlassColors.glassShadow
+                )
+                .clip(LiquidGlassShapes.card)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            GlassColors.glassHighlight,
+                            GlassColors.glassCardBackground
+                        )
+                    )
+                )
+                .border(
+                    width = 0.5.dp,
+                    color = Color.Black.copy(alpha = 0.06f),
+                    shape = LiquidGlassShapes.card
+                )
         ) {
             Row(
                 modifier = Modifier
@@ -114,7 +137,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
                         "¥${formatAmount(monthlyIncome)}",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = GlassColors.iosBlue
                     )
                 }
             }
@@ -233,7 +256,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
                                             Text(
                                                 text = "+${formatAmount(summary.income)}",
                                                 fontSize = 9.sp,
-                                                color = MaterialTheme.colorScheme.primary,
+                                                color = GlassColors.iosBlue,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                                 lineHeight = 11.sp
@@ -298,56 +321,33 @@ fun YearPickerDialog(
     ) {
         AnimatedVisibility(
             visible = true,
-            enter = scaleIn(
-                initialScale = 0.92f,
-                animationSpec = tween(350)
-            ) + fadeIn(animationSpec = tween(300)),
-            exit = scaleOut(
-                targetScale = 0.92f,
-                animationSpec = tween(250)
-            ) + fadeOut(animationSpec = tween(200))
+            enter = scaleIn(initialScale = 0.92f, animationSpec = tween(350)) + fadeIn(animationSpec = tween(300)),
+            exit = scaleOut(targetScale = 0.92f, animationSpec = tween(250)) + fadeOut(animationSpec = tween(200))
         ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .fillMaxHeight(0.5f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(GlassColors.glassCardBackground)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    text = "选择年份",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn {
-                    items(years) { year ->
-                        val isSelected = year == selectedYear
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                                    else Color.Transparent
-                                )
-                                .clickable { onYearSelected(year) }
-                                .padding(14.dp)
-                        ) {
-                            Text(
-                                text = "${year}年",
-                                fontSize = 17.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurface
-                            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .fillMaxHeight(0.5f)
+                    .shadow(elevation = 10.dp, shape = LiquidGlassShapes.card, clip = false, ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow)
+                    .clip(LiquidGlassShapes.card)
+                    .background(Brush.verticalGradient(colors = listOf(GlassColors.glassHighlight, GlassColors.glassCardBackground)))
+                    .border(width = 0.5.dp, color = Color.Black.copy(alpha = 0.06f), shape = LiquidGlassShapes.card)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text("选择年份", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyColumn {
+                        items(years) { year ->
+                            val isSelected = year == selectedYear
+                            Box(
+                                modifier = Modifier.fillMaxWidth().clip(LiquidGlassShapes.small).background(if (isSelected) GlassColors.iosBlue.copy(alpha = 0.08f) else Color.Transparent).clickable { onYearSelected(year) }.padding(14.dp)
+                            ) {
+                                Text("${year}年", fontSize = 17.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) GlassColors.iosBlue else MaterialTheme.colorScheme.onSurface)
+                            }
                         }
                     }
                 }
             }
-        }
         }
     }
 }
@@ -358,253 +358,123 @@ fun MonthPickerDialog(
     onMonthSelected: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val months = listOf(
-        "1月", "2月", "3月", "4月", "5月", "6月",
-        "7月", "8月", "9月", "10月", "11月", "12月"
-    )
+    val months = listOf("1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月")
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         AnimatedVisibility(
             visible = true,
-            enter = scaleIn(
-                initialScale = 0.92f,
-                animationSpec = tween(350)
-            ) + fadeIn(animationSpec = tween(300)),
-            exit = scaleOut(
-                targetScale = 0.92f,
-                animationSpec = tween(250)
-            ) + fadeOut(animationSpec = tween(200))
+            enter = scaleIn(initialScale = 0.92f, animationSpec = tween(350)) + fadeIn(animationSpec = tween(300)),
+            exit = scaleOut(targetScale = 0.92f, animationSpec = tween(250)) + fadeOut(animationSpec = tween(200))
         ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(GlassColors.glassCardBackground)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    text = "选择月份",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                val rows = months.chunked(4)
-                rows.forEach { row ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        row.forEach { monthName ->
-                            val monthNum = months.indexOf(monthName) + 1
-                            val isSelected = monthNum == selectedMonth
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(
-                                        if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-                                        else GlassColors.glassSurfaceVariant
-                                    )
-                                    .clickable { onMonthSelected(monthNum) }
-                                    .padding(vertical = 14.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = monthName,
-                                    fontSize = 15.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .shadow(elevation = 10.dp, shape = LiquidGlassShapes.card, clip = false, ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow)
+                    .clip(LiquidGlassShapes.card)
+                    .background(Brush.verticalGradient(colors = listOf(GlassColors.glassHighlight, GlassColors.glassCardBackground)))
+                    .border(width = 0.5.dp, color = Color.Black.copy(alpha = 0.06f), shape = LiquidGlassShapes.card)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text("选择月份", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    val rows = months.chunked(4)
+                    rows.forEach { row ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            row.forEach { monthName ->
+                                val monthNum = months.indexOf(monthName) + 1
+                                val isSelected = monthNum == selectedMonth
+                                Box(modifier = Modifier.weight(1f).clip(LiquidGlassShapes.small).background(if (isSelected) GlassColors.iosBlue.copy(alpha = 0.10f) else GlassColors.glassSurfaceVariant).clickable { onMonthSelected(monthNum) }.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
+                                    Text(monthName, fontSize = 15.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) GlassColors.iosBlue else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                             }
+                            repeat(4 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                         }
-                        repeat(4 - row.size) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
                 }
             }
-        }
         }
     }
 }
 
 @Composable
-fun DayDetailDialog(
-    year: Int,
-    month: Int,
-    daySummary: DaySummary,
-    onDismiss: () -> Unit
-) {
+fun DayDetailDialog(year: Int, month: Int, daySummary: DaySummary, onDismiss: () -> Unit) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         AnimatedVisibility(
             visible = true,
-            enter = scaleIn(
-                initialScale = 0.92f,
-                animationSpec = tween(350)
-            ) + fadeIn(animationSpec = tween(300)),
-            exit = scaleOut(
-                targetScale = 0.92f,
-                animationSpec = tween(250)
-            ) + fadeOut(animationSpec = tween(200))
+            enter = scaleIn(initialScale = 0.92f, animationSpec = tween(350)) + fadeIn(animationSpec = tween(300)),
+            exit = scaleOut(targetScale = 0.92f, animationSpec = tween(250)) + fadeOut(animationSpec = tween(200))
         ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.65f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(GlassColors.glassCardBackground)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${year}年${month}月${daySummary.day}日",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    TextButton(onClick = onDismiss) {
-                        Text("关闭")
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .fillMaxHeight(0.65f)
+                    .shadow(elevation = 10.dp, shape = LiquidGlassShapes.card, clip = false, ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow)
+                    .clip(LiquidGlassShapes.card)
+                    .background(Brush.verticalGradient(colors = listOf(GlassColors.glassHighlight, GlassColors.glassCardBackground)))
+                    .border(width = 0.5.dp, color = Color.Black.copy(alpha = 0.06f), shape = LiquidGlassShapes.card)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("${year}年${month}月${daySummary.day}日", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        TextButton(onClick = onDismiss) { Text("关闭") }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn {
-                    if (daySummary.expense > 0) {
-                        item {
-                            Text(
-                                text = "支出 ¥${formatAmount(daySummary.expense)}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
-
-                        val expenseTxs = daySummary.transactions
-                            .filter { it.type == "expense" }
-
-                        items(expenseTxs) { tx ->
-                            TransactionDetailItem(
-                                transaction = tx,
-                                timeFormat = timeFormat
-                            )
-                        }
-
-                        if (daySummary.income > 0) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyColumn {
+                        if (daySummary.expense > 0) {
                             item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("支出 ¥${formatAmount(daySummary.expense)}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                            val expenseTxs = daySummary.transactions.filter { it.type == "expense" }
+                            items(expenseTxs) { tx -> TransactionDetailItem(transaction = tx, timeFormat = timeFormat) }
+                            if (daySummary.income > 0) {
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
                             }
                         }
-                    }
-
-                    if (daySummary.income > 0) {
-                        item {
-                            Text(
-                                text = "收入 ¥${formatAmount(daySummary.income)}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                        }
-
-                        val incomeTxs = daySummary.transactions
-                            .filter { it.type == "income" }
-
-                        items(incomeTxs) { tx ->
-                            TransactionDetailItem(
-                                transaction = tx,
-                                timeFormat = timeFormat
-                            )
+                        if (daySummary.income > 0) {
+                            item {
+                                Text("收入 ¥${formatAmount(daySummary.income)}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = GlassColors.iosBlue)
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                            val incomeTxs = daySummary.transactions.filter { it.type == "income" }
+                            items(incomeTxs) { tx -> TransactionDetailItem(transaction = tx, timeFormat = timeFormat) }
                         }
                     }
                 }
             }
         }
-        }
     }
 }
 
 @Composable
-fun TransactionDetailItem(
-    transaction: Transaction,
-    timeFormat: SimpleDateFormat
-) {
+fun TransactionDetailItem(transaction: Transaction, timeFormat: SimpleDateFormat) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 3.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(GlassColors.glassSurfaceVariant)
+            .shadow(elevation = 2.dp, shape = LiquidGlassShapes.small, clip = false, ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow)
+            .clip(LiquidGlassShapes.small)
+            .background(Brush.verticalGradient(colors = listOf(GlassColors.glassHighlight, GlassColors.glassSurfaceVariant)))
+            .border(width = 0.5.dp, color = Color.Black.copy(alpha = 0.06f), shape = LiquidGlassShapes.small)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                val desc = buildString {
-                    append(transaction.category)
-                    if (transaction.subCategory != null) {
-                        append(" · ${transaction.subCategory}")
-                    }
-                }
-                Text(
-                    text = desc,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                val desc = buildString { append(transaction.category); if (transaction.subCategory != null) { append(" · ${transaction.subCategory}") } }
+                Text(desc, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (transaction.channel != null) {
-                        Text(
-                            text = transaction.channel,
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Text(
-                        text = timeFormat.format(Date(transaction.timestamp)),
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (transaction.channel != null) { Text(transaction.channel, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    Text(timeFormat.format(Date(transaction.timestamp)), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (transaction.note.isNotEmpty()) {
-                    Text(
-                        text = transaction.note,
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                if (transaction.note.isNotEmpty()) { Text(transaction.note, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
-            Text(
-                text = if (transaction.type == "expense") "-¥${formatAmount(transaction.amount)}"
-                else "+¥${formatAmount(transaction.amount)}",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (transaction.type == "expense") MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.primary
-            )
+            Text(if (transaction.type == "expense") "-¥${formatAmount(transaction.amount)}" else "+¥${formatAmount(transaction.amount)}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = if (transaction.type == "expense") MaterialTheme.colorScheme.error else GlassColors.iosBlue)
         }
     }
 }
