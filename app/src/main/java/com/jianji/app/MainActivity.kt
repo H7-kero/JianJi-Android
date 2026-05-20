@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -47,6 +48,7 @@ import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.GlassColors
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -219,8 +221,9 @@ fun FloatingGlassNavBar(
                 .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
             val tabWidth = maxWidth / 3
+            val density = LocalDensity.current
 
-            val indicatorTargetPx = currentPage * tabWidth
+            val indicatorTargetPx = currentPage * with(density) { tabWidth.toPx() }
             val animatedOffset by animateFloatAsState(
                 targetValue = indicatorTargetPx,
                 animationSpec = spring(dampingRatio = 0.75f, stiffness = 350f),
