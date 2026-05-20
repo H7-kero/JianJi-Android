@@ -536,7 +536,6 @@ fun DayDetailDialog(
                     }
                 }
             }
-            }
         }
         }
     }
