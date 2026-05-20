@@ -1,26 +1,31 @@
 package com.jianji.app.ui.record
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Backspace
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.ui.theme.GlassColors
+import com.jianji.app.ui.theme.LiquidGlassShapes
 
 @Composable
 fun CalculatorKeyboard(
@@ -29,55 +34,157 @@ fun CalculatorKeyboard(
     onKeyPress: (String) -> Unit,
     onBackspace: () -> Unit,
     onSave: () -> Unit,
-    saveEnabled: Boolean,
-    modifier: Modifier = Modifier
+    saveEnabled: Boolean
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        KeyRow(
-            keys = listOf("7", "8", "9", "⌫"),
-            onKeyPress = { key ->
-                if (key == "⌫") onBackspace() else onKeyPress(key)
-            }
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        KeyRow(
-            keys = listOf("4", "5", "6", "+"),
-            onKeyPress = { key -> onKeyPress(key) }
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        KeyRow(
-            keys = listOf("1", "2", "3", "-"),
-            onKeyPress = { key -> onKeyPress(key) }
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        KeyRow(
-            keys = listOf(".", "0", "*", "/"),
-            onKeyPress = { key -> onKeyPress(key) }
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        SaveButtonRow(
-            enabled = saveEnabled,
-            onSave = onSave
-        )
-    }
-}
-
-@Composable
-private fun KeyRow(
-    keys: List<String>,
-    onKeyPress: (String) -> Unit
-) {
-    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        keys.forEach { key ->
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
             CalculatorKey(
-                label = key,
-                onClick = { onKeyPress(key) },
+                label = "1",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("1") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "2",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("2") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "3",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("3") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "+",
+                isBackspace = false,
+                isOperator = true,
+                isNumber = false,
+                onClick = { onKeyPress("+") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            CalculatorKey(
+                label = "4",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("4") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "5",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("5") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "6",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("6") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "−",
+                isBackspace = false,
+                isOperator = true,
+                isNumber = false,
+                onClick = { onKeyPress("-") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            CalculatorKey(
+                label = "7",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("7") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "8",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("8") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "9",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("9") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "·",
+                isBackspace = false,
+                isOperator = true,
+                isNumber = false,
+                onClick = { onKeyPress(".") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            CalculatorKey(
+                label = "C",
+                isBackspace = true,
+                isOperator = false,
+                isNumber = false,
+                onClick = { onBackspace() },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "0",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = true,
+                onClick = { onKeyPress("0") },
+                modifier = Modifier.weight(1f)
+            )
+            CalculatorKey(
+                label = "",
+                isBackspace = false,
+                isOperator = false,
+                isNumber = false,
+                onClick = {},
+                modifier = Modifier.weight(1f)
+            )
+            SaveButton(
+                enabled = saveEnabled,
+                onClick = { onSave() },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -87,30 +194,30 @@ private fun KeyRow(
 @Composable
 private fun CalculatorKey(
     label: String,
+    isBackspace: Boolean,
+    isOperator: Boolean,
+    isNumber: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var pressed by remember { mutableStateOf(false) }
+    var isPressed by remember { mutableStateOf(false) }
+
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.92f else 1f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 800f),
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = tween(120),
         label = "key_scale"
     )
 
-    val isOperator = label in listOf("+", "-", "*", "/")
-    val isBackspace = label == "⌫"
-    val isNumber = label in listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".")
-
     val bgColor = when {
         isBackspace -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-        isOperator -> MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+        isOperator -> GlassColors.iosBlue.copy(alpha = 0.08f)
         isNumber -> GlassColors.glassSurface
         else -> GlassColors.glassSurface
     }
 
     val contentColor = when {
         isBackspace -> MaterialTheme.colorScheme.onSurfaceVariant
-        isOperator -> MaterialTheme.colorScheme.primary
+        isOperator -> GlassColors.iosBlue
         else -> MaterialTheme.colorScheme.onSurface
     }
 
@@ -118,123 +225,70 @@ private fun CalculatorKey(
         modifier = modifier
             .height(52.dp)
             .scale(scale)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(LiquidGlassShapes.small)
             .background(bgColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
-                pressed = true
+                isPressed = true
                 onClick()
             },
         contentAlignment = Alignment.Center
     ) {
+        if (label.isEmpty()) return@Box
+
         if (isBackspace) {
             Icon(
-                imageVector = Icons.Default.Backspace,
+                painter = painterResource(id = android.R.drawable.ic_delete),
                 contentDescription = "删除",
                 tint = contentColor,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(24.dp)
             )
         } else {
             Text(
                 text = label,
-                fontSize = if (isOperator) 20.sp else 22.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Medium,
-                color = contentColor,
-                textAlign = TextAlign.Center
+                color = contentColor
             )
         }
     }
 
-    LaunchedEffect(pressed) {
-        if (pressed) {
-            kotlinx.coroutines.delay(80)
-            pressed = false
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            kotlinx.coroutines.delay(150)
+            isPressed = false
         }
     }
 }
 
 @Composable
-private fun SaveButtonRow(
+private fun SaveButton(
     enabled: Boolean,
-    onSave: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .height(52.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(
-                if (enabled) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                if (enabled) GlassColors.iosBlue
+                else GlassColors.iosBlue.copy(alpha = 0.25f)
             )
-            .clickable(enabled = enabled) { onSave() },
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = enabled
+            ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "保存",
-            fontSize = 18.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold,
-            color = if (enabled) Color.White else Color.White.copy(alpha = 0.5f)
+            color = Color.White
         )
     }
-}
-
-fun evaluateExpression(expression: String): Double {
-    if (expression.isBlank()) return 0.0
-
-    val cleaned = expression.replace("\\s+".toRegex(), "")
-    if (cleaned.isEmpty()) return 0.0
-
-    return try {
-        evaluateArithmetic(cleaned)
-    } catch (_: Exception) {
-        cleaned.toDoubleOrNull() ?: 0.0
-    }
-}
-
-private fun evaluateArithmetic(expr: String): Double {
-    var index = 0
-
-    fun parseFactor(): Double {
-        if (index < expr.length && expr[index] == '-') {
-            index++
-            return -parseFactor()
-        }
-        val start = index
-        var dotCount = 0
-        while (index < expr.length && (expr[index].isDigit() || expr[index] == '.')) {
-            if (expr[index] == '.') dotCount++
-            if (dotCount > 1) break
-            index++
-        }
-        return expr.substring(start, index).toDouble()
-    }
-
-    fun parseTerm(): Double {
-        var result = parseFactor()
-        while (index < expr.length) {
-            when (expr[index]) {
-                '*' -> { index++; result *= parseFactor() }
-                '/' -> { index++; result /= parseFactor() }
-                else -> break
-            }
-        }
-        return result
-    }
-
-    fun parseExpression(): Double {
-        var result = parseTerm()
-        while (index < expr.length) {
-            when (expr[index]) {
-                '+' -> { index++; result += parseTerm() }
-                '-' -> { index++; result -= parseTerm() }
-                else -> break
-            }
-        }
-        return result
-    }
-
-    return parseExpression()
 }
