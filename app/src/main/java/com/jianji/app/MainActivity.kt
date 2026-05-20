@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +19,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +45,6 @@ import com.jianji.app.ui.profile.ProfileScreen
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.GlassColors
-import com.jianji.app.ui.theme.iOSColorTransition
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,14 +168,14 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
                 val capsuleBackground by animateColorAsState(
                     targetValue = if (selected) Color.Black.copy(alpha = 0.065f)
                     else Color.Transparent,
-                    animationSpec = iOSColorTransition,
+                    animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                     label = "nav_capsule_bg"
                 )
 
                 val iconTint by animateColorAsState(
                     targetValue = if (selected) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant,
-                    animationSpec = iOSColorTransition,
+                    animationSpec = tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                     label = "nav_icon_tint"
                 )
 

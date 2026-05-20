@@ -87,7 +87,6 @@ fun ProfileScreen() {
         animationStarted = true
     }
 
-    val entrySpec = tween<Float>(durationMillis = 400, easing = FastOutSlowInEasing)
     val offsetPx = 30
 
     Column(
@@ -102,7 +101,7 @@ fun ProfileScreen() {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 0)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Text(
                 text = "我的",
@@ -117,7 +116,7 @@ fun ProfileScreen() {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 80)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Box(
                 modifier = Modifier
@@ -161,7 +160,7 @@ fun ProfileScreen() {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 160)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Text(
                 text = "使用说明",
@@ -177,7 +176,7 @@ fun ProfileScreen() {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 200)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Box(
                 modifier = Modifier

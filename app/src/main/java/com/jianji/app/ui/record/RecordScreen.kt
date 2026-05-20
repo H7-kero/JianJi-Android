@@ -57,7 +57,6 @@ fun RecordScreen(viewModel: RecordViewModel) {
         animationStarted = true
     }
 
-    val entrySpec = tween<Float>(durationMillis = 400, easing = FastOutSlowInEasing)
     val offsetPx = 30
 
     Column(
@@ -72,7 +71,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 0)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Text(
                 text = "记一笔",
@@ -87,7 +86,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 60)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             TypeSelector(
                 selectedType = transactionType,
@@ -100,7 +99,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 100)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             AmountInput(
                 amount = amount,
@@ -114,7 +113,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
             AnimatedVisibility(
                 visible = animationStarted,
                 enter = fadeIn(animationSpec = tween(350, delayMillis = 140)) +
-                        slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                        slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
             ) {
                 Column {
                     ChannelSelector(
@@ -130,7 +129,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 180)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             CategorySelector(
                 categories = categories,
@@ -143,7 +142,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
             AnimatedVisibility(
                 visible = animationStarted,
                 enter = fadeIn(animationSpec = tween(350, delayMillis = 220)) +
-                        slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                        slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(20.dp))
@@ -159,7 +158,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 260)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Column {
                 Spacer(modifier = Modifier.height(24.dp))
@@ -173,7 +172,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
         AnimatedVisibility(
             visible = animationStarted,
             enter = fadeIn(animationSpec = tween(350, delayMillis = 320)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = entrySpec)
+                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
         ) {
             Column {
                 Spacer(modifier = Modifier.height(32.dp))
