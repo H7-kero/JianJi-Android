@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -22,22 +23,17 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.repository.TransactionRepository
@@ -89,14 +85,17 @@ fun JianJiApp(repository: TransactionRepository) {
         .getFabPosition(context)
         .collectAsState(initial = "left")
 
-    val navBarHeight = 72
+    val navBarHeight = 56
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(GlassColors.glassBackground)
+    ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = navBarHeight.dp)
                 .navigationBarsPadding()
         ) { page ->
             when (page) {
@@ -128,14 +127,12 @@ fun JianJiApp(repository: TransactionRepository) {
             modifier = Modifier
                 .align(if (fabPosition == "left") Alignment.BottomStart else Alignment.BottomEnd)
                 .padding(
-                    start = if (fabPosition == "left") 24.dp else 0.dp,
-                    end = if (fabPosition == "right") 24.dp else 0.dp,
-                    bottom = (navBarHeight + 46).dp
+                    start = if (fabPosition == "left") 48.dp else 0.dp,
+                    end = if (fabPosition == "right") 48.dp else 0.dp,
+                    bottom = (navBarHeight + 94).dp
                 )
         ) {
-            FAB(
-                onClick = { showRecordSheet = true }
-            )
+            FAB(onClick = { showRecordSheet = true })
         }
     }
 
@@ -203,72 +200,92 @@ fun FloatingGlassNavBar(
                 elevation = 16.dp,
                 shape = RoundedCornerShape(24.dp),
                 clip = false,
-                ambientColor = Color.Black.copy(alpha = 0.10f),
-                spotColor = Color.Black.copy(alpha = 0.10f)
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.08f)
             )
             .clip(RoundedCornerShape(24.dp))
-            .background(GlassColors.glassNavBackground)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GlassColors.glassHighlight,
+                        GlassColors.glassNavBackground
+                    )
+                )
+            )
     ) {
-        Row(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+                .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
-            items.forEach { (page, icon, label) ->
-                val selected = currentPage == page
+            val tabWidth = maxWidth / 3
 
-                val capsuleBackground by animateColorAsState(
-                    targetValue = if (selected) Color.Black.copy(alpha = 0.06f)
-                    else Color.Transparent,
-                    animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    label = "nav_bg"
-                )
+            val indicatorTargetPx = currentPage * tabWidth
+            val animatedOffset by animateFloatAsState(
+                targetValue = indicatorTargetPx,
+                animationSpec = spring(dampingRatio = 0.75f, stiffness = 350f),
+                label = "nav_indicator"
+            )
 
-                val iconTint by animateColorAsState(
-                    targetValue = if (selected) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    label = "nav_icon"
-                )
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(animatedOffset.roundToInt(), 0) }
+                    .width(tabWidth)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color.Black.copy(alpha = 0.06f))
+            )
 
-                val textColor by animateColorAsState(
-                    targetValue = if (selected) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    label = "nav_text"
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                items.forEach { (page, icon, label) ->
+                    val selected = currentPage == page
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(capsuleBackground)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { onPageSelected(page) }
-                        .padding(horizontal = 4.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    val iconTint by animateColorAsState(
+                        targetValue = if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                        animationSpec = tween(300, easing = FastOutSlowInEasing),
+                        label = "nav_icon"
+                    )
+
+                    val textColor by animateColorAsState(
+                        targetValue = if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                        animationSpec = tween(300, easing = FastOutSlowInEasing),
+                        label = "nav_text"
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { onPageSelected(page) }
+                            .padding(vertical = 5.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = label,
-                            tint = iconTint,
-                            modifier = Modifier.size(if (selected) 24.dp else 22.dp)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = label,
-                            fontSize = 11.sp,
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = textColor,
-                            textAlign = TextAlign.Center,
-                            softWrap = false
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = label,
+                                tint = iconTint,
+                                modifier = Modifier.size(if (selected) 22.dp else 20.dp)
+                            )
+                            Spacer(modifier = Modifier.height(1.dp))
+                            Text(
+                                text = label,
+                                fontSize = 10.sp,
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = textColor,
+                                textAlign = TextAlign.Center,
+                                softWrap = false
+                            )
+                        }
                     }
                 }
             }

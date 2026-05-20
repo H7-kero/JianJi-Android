@@ -1,7 +1,5 @@
 package com.jianji.app.ui.home
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,8 +37,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
             .fillMaxSize()
             .background(GlassColors.glassBackground)
             .padding(horizontal = 20.dp)
-            .padding(top = 16.dp)
-            .padding(bottom = 72.dp)
+            .padding(top = 48.dp)
     ) {
         Text(
             text = "简记",
@@ -85,20 +82,10 @@ fun HomeScreen(viewModel: HomeViewModel) {
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                contentPadding = PaddingValues(bottom = 96.dp)
             ) {
-                itemsIndexed(transactions) { index, transaction ->
-                    AnimatedVisibility(
-                        visible = true,
-                        enter = fadeIn(
-                            animationSpec = tween(400, delayMillis = index * 60)
-                        ) + slideInVertically(
-                            initialOffsetY = { it / 6 },
-                            animationSpec = tween(400, delayMillis = index * 60)
-                        )
-                    ) {
-                        TransactionItem(transaction, timeFormat)
-                    }
+                itemsIndexed(transactions, key = { _, tx -> tx.id }) { _, transaction ->
+                    TransactionItem(transaction, timeFormat)
                 }
             }
         }

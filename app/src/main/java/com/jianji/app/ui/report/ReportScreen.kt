@@ -74,7 +74,7 @@ fun ReportScreen(viewModel: ReportViewModel) {
             .background(GlassColors.glassBackground)
             .padding(horizontal = 20.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
         Text(
             text = "报表",
@@ -247,6 +247,8 @@ fun ReportScreen(viewModel: ReportViewModel) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(84.dp))
     }
 
     if (showYearPicker) {

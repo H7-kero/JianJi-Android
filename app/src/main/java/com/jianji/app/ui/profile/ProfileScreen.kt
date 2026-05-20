@@ -3,9 +3,9 @@ package com.jianji.app.ui.profile
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -102,75 +101,124 @@ fun ProfileScreen() {
         if (autoAccountingEnabled) isAccessibilityServiceEnabled(context) else false
     }
 
-    var animationStarted by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        animationStarted = true
-    }
-
-    val offsetPx = 30
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(GlassColors.glassBackground)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
+            .padding(top = 48.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AnimatedVisibility(
-            visible = animationStarted,
-            enter = fadeIn(animationSpec = tween(350, delayMillis = 0)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
-        ) {
-            Text(
-                text = "我的",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
+        Text(
+            text = "我的",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        AnimatedVisibility(
-            visible = animationStarted,
-            enter = fadeIn(animationSpec = tween(350, delayMillis = 80)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(GlassColors.glassCardBackground)
-            ) {
-                Column(modifier = Modifier.padding(4.dp)) {
-                    AutoAccountingItem(
-                        icon = Icons.Default.FlashOn,
-                        title = "自动记账",
-                        subtitle = if (isServiceEnabled) "已开启，支付后自动弹出确认" else "开启后支付完成自动弹出记账确认",
-                        checked = autoAccountingEnabled,
-                        onCheckedChange = { checked ->
+            Column(modifier = Modifier.padding(4.dp)) {
+                AutoAccountingItem(
+                    icon = Icons.Default.FlashOn,
+                    title = "自动记账",
+                    subtitle = if (isServiceEnabled) "已开启，支付后自动弹出确认" else "开启后支付完成自动弹出记账确认",
+                    checked = autoAccountingEnabled,
+                    onCheckedChange = { checked ->
+                        coroutineScope.launch(Dispatchers.IO) {
+                            AutoAccountingPreferences.setAutoAccountingEnabled(context, checked)
+                        }
+                        if (checked && !isAccessibilityServiceEnabled(context)) {
+                            openAccessibilitySettings(context)
+                        }
+                    }
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                )
+
+                ProfileMenuItem(
+                    icon = Icons.Default.Settings,
+                    title = "无障碍设置",
+                    subtitle = "管理自动记账无障碍权限",
+                    onClick = { openAccessibilitySettings(context) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
+        ) {
+            Column(modifier = Modifier.padding(4.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.TouchApp,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "FAB 位置",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "记账按钮在首页的位置",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    FabPositionOption(
+                        label = "左下角",
+                        isSelected = fabPosition == "left",
+                        onClick = {
                             coroutineScope.launch(Dispatchers.IO) {
-                                AutoAccountingPreferences.setAutoAccountingEnabled(context, checked)
-                            }
-                            if (checked && !isAccessibilityServiceEnabled(context)) {
-                                openAccessibilitySettings(context)
+                                FabPreferences.setFabPosition(context, "left")
                             }
                         }
                     )
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                    )
-
-                    ProfileMenuItem(
-                        icon = Icons.Default.Settings,
-                        title = "无障碍设置",
-                        subtitle = "管理自动记账无障碍权限",
-                        onClick = { openAccessibilitySettings(context) }
+                    FabPositionOption(
+                        label = "右下角",
+                        isSelected = fabPosition == "right",
+                        onClick = {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                FabPreferences.setFabPosition(context, "right")
+                            }
+                        }
                     )
                 }
             }
@@ -178,134 +226,46 @@ fun ProfileScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        AnimatedVisibility(
-            visible = animationStarted,
-            enter = fadeIn(animationSpec = tween(350, delayMillis = 130)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(GlassColors.glassCardBackground)
-            ) {
-                Column(modifier = Modifier.padding(4.dp)) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.TouchApp,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(28.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "FAB 位置",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "记账按钮在首页的位置",
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        FabPositionOption(
-                            label = "左下角",
-                            isSelected = fabPosition == "left",
-                            onClick = {
-                                coroutineScope.launch(Dispatchers.IO) {
-                                    FabPreferences.setFabPosition(context, "left")
-                                }
-                            }
-                        )
-                        FabPositionOption(
-                            label = "右下角",
-                            isSelected = fabPosition == "right",
-                            onClick = {
-                                coroutineScope.launch(Dispatchers.IO) {
-                                    FabPreferences.setFabPosition(context, "right")
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        AnimatedVisibility(
-            visible = animationStarted,
-            enter = fadeIn(animationSpec = tween(350, delayMillis = 160)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
-        ) {
-            Text(
-                text = "使用说明",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-        }
+        Text(
+            text = "使用说明",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        AnimatedVisibility(
-            visible = animationStarted,
-            enter = fadeIn(animationSpec = tween(350, delayMillis = 200)) +
-                    slideInVertically(initialOffsetY = { offsetPx }, animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(GlassColors.glassCardBackground)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(GlassColors.glassCardBackground)
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    InstructionItem(
-                        number = "1",
-                        text = "开启自动记账开关，系统会引导您授予无障碍权限"
-                    )
-                    InstructionItem(
-                        number = "2",
-                        text = "授权后，当您在微信、支付宝或京东完成支付时，会自动弹出记账确认窗口"
-                    )
-                    InstructionItem(
-                        number = "3",
-                        text = "确认信息无误后点击保存，交易将自动记录；点击取消则放弃本次记账"
-                    )
-                    InstructionItem(
-                        number = "4",
-                        text = "可在确认窗口中重新选择分类和子分类，匹配您的实际消费类型"
-                    )
-                }
+                InstructionItem(
+                    number = "1",
+                    text = "开启自动记账开关，系统会引导您授予无障碍权限"
+                )
+                InstructionItem(
+                    number = "2",
+                    text = "授权后，当您在微信、支付宝或京东完成支付时，会自动弹出记账确认窗口"
+                )
+                InstructionItem(
+                    number = "3",
+                    text = "确认信息无误后点击保存，交易将自动记录；点击取消则放弃本次记账"
+                )
+                InstructionItem(
+                    number = "4",
+                    text = "可在确认窗口中重新选择分类和子分类，匹配您的实际消费类型"
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(96.dp))
     }
 }
 
