@@ -21,10 +21,13 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,8 +84,8 @@ fun JianJiApp(repository: TransactionRepository) {
     val recordViewModel = remember { RecordViewModel(repository) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var showRecordSheet by remember { androidx.compose.runtime.mutableStateOf(false) }
-    var fabVisible by remember { androidx.compose.runtime.mutableStateOf(true) }
+    var showRecordSheet by remember { mutableStateOf(false) }
+    var fabVisible by remember { mutableStateOf(true) }
 
     val fabPosition by FabPreferences
         .getFabPosition(context)

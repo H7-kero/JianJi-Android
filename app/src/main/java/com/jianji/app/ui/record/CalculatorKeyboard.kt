@@ -37,9 +37,9 @@ fun CalculatorKeyboard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         KeyRow(
-            keys = listOf("7", "8", "9", "⌫"),
+            keys = listOf("7", "8", "9", "\u231A"),
             onKeyPress = { key ->
-                if (key == "⌫") onBackspace() else onKeyPress(key)
+                if (key == "\u231A") onBackspace() else onKeyPress(key)
             }
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -98,7 +98,7 @@ private fun CalculatorKey(
     )
 
     val isOperator = label in listOf("+", "-", "*", "/")
-    val isBackspace = label == "⌫"
+    val isBackspace = label == "\u231A"
     val isNumber = label in listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".")
 
     val bgColor = when {
@@ -197,16 +197,19 @@ fun evaluateExpression(expression: String): Double {
 private fun evaluateArithmetic(expr: String): Double {
     var index = 0
 
-    fun parseExpression(): Double {
-        var result = parseTerm()
-        while (index < expr.length) {
-            when (expr[index]) {
-                '+' -> { index++; result += parseTerm() }
-                '-' -> { index++; result -= parseTerm() }
-                else -> break
-            }
+    fun parseFactor(): Double {
+        if (index < expr.length && expr[index] == '-') {
+            index++
+            return -parseFactor()
         }
-        return result
+        val start = index
+        var dotCount = 0
+        while (index < expr.length && (expr[index].isDigit() || expr[index] == '.')) {
+            if (expr[index] == '.') dotCount++
+            if (dotCount > 1) break
+            index++
+        }
+        return expr.substring(start, index).toDouble()
     }
 
     fun parseTerm(): Double {
@@ -221,19 +224,16 @@ private fun evaluateArithmetic(expr: String): Double {
         return result
     }
 
-    fun parseFactor(): Double {
-        if (index < expr.length && expr[index] == '-') {
-            index++
-            return -parseFactor()
+    fun parseExpression(): Double {
+        var result = parseTerm()
+        while (index < expr.length) {
+            when (expr[index]) {
+                '+' -> { index++; result += parseTerm() }
+                '-' -> { index++; result -= parseTerm() }
+                else -> break
+            }
         }
-        val start = index
-        var dotCount = 0
-        while (index < expr.length && (expr[index].isDigit() || expr[index] == '.')) {
-            if (expr[index] == '.') dotCount++
-            if (dotCount > 1) break
-            index++
-        }
-        return expr.substring(start, index).toDouble()
+        return result
     }
 
     return parseExpression()

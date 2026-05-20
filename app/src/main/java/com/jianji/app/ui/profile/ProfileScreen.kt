@@ -427,7 +427,7 @@ private fun InstructionItem(
 }
 
 @Composable
-private fun FabPositionOption(
+private fun RowScope.FabPositionOption(
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit

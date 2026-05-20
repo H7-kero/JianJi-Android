@@ -2,7 +2,6 @@ package com.jianji.app.ui.record
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -392,7 +391,7 @@ private fun CategorySelectorRow(
             }
         }
         Text(
-            text = "▸",
+            text = "\u25B8",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
