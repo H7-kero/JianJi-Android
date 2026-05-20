@@ -12,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,7 +23,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,15 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.jianji.app.data.local.AppDatabase
 import com.jianji.app.data.repository.TransactionRepository
 import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
@@ -55,7 +50,6 @@ import com.jianji.app.ui.record.RecordViewModel
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.GlassColors
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -63,7 +57,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val database = AppDatabase.getDatabase(this)
+        val database = com.jianji.app.data.local.AppDatabase.getDatabase(this)
         val transactionDao = database.transactionDao()
         val repository = TransactionRepository(transactionDao)
 
@@ -78,123 +72,70 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JianJiApp(repository: TransactionRepository) {
-    val navController = rememberNavController()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val recordViewModel = remember { RecordViewModel(repository) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    val homeViewModel = remember { HomeViewModel(repository) }
+    val reportViewModel = remember { ReportViewModel(repository) }
+    val recordViewModel = remember { RecordViewModel(repository) }
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showRecordSheet by remember { mutableStateOf(false) }
-    var fabVisible by remember { mutableStateOf(true) }
+
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val fabVisible = pagerState.currentPage != 2
 
     val fabPosition by FabPreferences
         .getFabPosition(context)
         .collectAsState(initial = "left")
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    LaunchedEffect(currentRoute) {
-        fabVisible = currentRoute == Screen.Home.route
-    }
+    val navBarHeight = 72
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            modifier = Modifier.navigationBarsPadding(),
-            bottomBar = {
-                FloatingGlassNavBar(navController)
-            },
-            containerColor = GlassColors.glassBackground
-        ) { padding ->
-            NavHost(
-                navController = navController,
-                startDestination = Screen.Home.route,
-                modifier = Modifier.padding(padding),
-                enterTransition = {
-                    fadeIn(
-                        animationSpec = tween(300, delayMillis = 80)
-                    ) + slideInHorizontally(
-                        initialOffsetX = { it / 8 },
-                        animationSpec = tween(350, easing = FastOutSlowInEasing)
-                    )
-                },
-                exitTransition = {
-                    fadeOut(animationSpec = tween(200)) +
-                            slideOutHorizontally(
-                                targetOffsetX = { -it / 8 },
-                                animationSpec = tween(250, easing = FastOutSlowInEasing)
-                            )
-                },
-                popEnterTransition = {
-                    fadeIn(animationSpec = tween(250)) +
-                            slideInHorizontally(
-                                initialOffsetX = { -it / 8 },
-                                animationSpec = tween(300, easing = FastOutSlowInEasing)
-                            )
-                },
-                popExitTransition = {
-                    fadeOut(animationSpec = tween(200)) +
-                            slideOutHorizontally(
-                                targetOffsetX = { it / 8 },
-                                animationSpec = tween(300, easing = FastOutSlowInEasing)
-                            )
-                }
-            ) {
-                composable(Screen.Home.route) {
-                    val viewModel = HomeViewModel(repository)
-                    HomeScreen(viewModel)
-                }
-                composable(Screen.Report.route) {
-                    val viewModel = ReportViewModel(repository)
-                    ReportScreen(viewModel)
-                }
-                composable(Screen.Profile.route) {
-                    ProfileScreen()
-                }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = navBarHeight.dp)
+                .navigationBarsPadding()
+        ) { page ->
+            when (page) {
+                0 -> HomeScreen(homeViewModel)
+                1 -> ReportScreen(reportViewModel)
+                2 -> ProfileScreen()
             }
         }
+
+        FloatingGlassNavBar(
+            currentPage = pagerState.currentPage,
+            onPageSelected = { page ->
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(page)
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 10.dp)
+        )
 
         AnimatedVisibility(
             visible = fabVisible,
             enter = scaleIn(animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f)) +
-                    fadeIn(animationSpec = tween(250)),
+                    fadeIn(animationSpec = tween(200)),
             exit = scaleOut(animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f)) +
-                    fadeOut(animationSpec = tween(200)),
+                    fadeOut(animationSpec = tween(150)),
             modifier = Modifier
                 .align(if (fabPosition == "left") Alignment.BottomStart else Alignment.BottomEnd)
                 .padding(
                     start = if (fabPosition == "left") 24.dp else 0.dp,
                     end = if (fabPosition == "right") 24.dp else 0.dp,
-                    bottom = 84.dp
+                    bottom = (navBarHeight + 46).dp
                 )
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = CircleShape,
-                        clip = false,
-                        ambientColor = Color.Black.copy(alpha = 0.10f),
-                        spotColor = Color.Black.copy(alpha = 0.10f)
-                    )
-                    .clip(CircleShape)
-                    .background(GlassColors.glassNavBackground)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        showRecordSheet = true
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "记账",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+            FAB(
+                onClick = { showRecordSheet = true }
+            )
         }
     }
 
@@ -214,27 +155,56 @@ fun JianJiApp(repository: TransactionRepository) {
 }
 
 @Composable
-fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
-    val items = listOf(
-        NavItem(Screen.Home, Icons.Default.Home, "首页"),
-        NavItem(Screen.Report, Icons.Default.BarChart, "报表"),
-        NavItem(Screen.Profile, Icons.Default.Person, "我的")
-    )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
-
+private fun FAB(onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 12.dp)
+            .size(56.dp)
             .shadow(
-                elevation = 12.dp,
+                elevation = 10.dp,
+                shape = CircleShape,
+                clip = false,
+                ambientColor = Color.Black.copy(alpha = 0.12f),
+                spotColor = Color.Black.copy(alpha = 0.12f)
+            )
+            .clip(CircleShape)
+            .background(GlassColors.glassNavBackground)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = "记账",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp)
+        )
+    }
+}
+
+@Composable
+fun FloatingGlassNavBar(
+    currentPage: Int,
+    onPageSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val items = listOf(
+        Triple(0, Icons.Default.Home, "首页"),
+        Triple(1, Icons.Default.BarChart, "报表"),
+        Triple(2, Icons.Default.Person, "我的")
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp)
+            .shadow(
+                elevation = 16.dp,
                 shape = RoundedCornerShape(24.dp),
                 clip = false,
-                ambientColor = Color.Black.copy(alpha = 0.08f),
-                spotColor = Color.Black.copy(alpha = 0.08f)
+                ambientColor = Color.Black.copy(alpha = 0.10f),
+                spotColor = Color.Black.copy(alpha = 0.10f)
             )
             .clip(RoundedCornerShape(24.dp))
             .background(GlassColors.glassNavBackground)
@@ -242,101 +212,66 @@ fun FloatingGlassNavBar(navController: androidx.navigation.NavController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 6.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            items.forEach { item ->
-                val selected = currentDestination?.hierarchy?.any {
-                    it.route == item.screen.route
-                } == true
+            items.forEach { (page, icon, label) ->
+                val selected = currentPage == page
 
                 val capsuleBackground by animateColorAsState(
-                    targetValue = if (selected) Color.Black.copy(alpha = 0.065f)
+                    targetValue = if (selected) Color.Black.copy(alpha = 0.06f)
                     else Color.Transparent,
                     animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    label = "nav_capsule_bg"
+                    label = "nav_bg"
                 )
 
                 val iconTint by animateColorAsState(
                     targetValue = if (selected) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     animationSpec = tween(300, easing = FastOutSlowInEasing),
-                    label = "nav_icon_tint"
+                    label = "nav_icon"
+                )
+
+                val textColor by animateColorAsState(
+                    targetValue = if (selected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    animationSpec = tween(300, easing = FastOutSlowInEasing),
+                    label = "nav_text"
                 )
 
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 3.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .background(capsuleBackground)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
-                        ) {
-                            navController.navigate(item.screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
-                        .padding(vertical = 10.dp),
+                        ) { onPageSelected(page) }
+                        .padding(horizontal = 4.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.label,
+                            imageVector = icon,
+                            contentDescription = label,
                             tint = iconTint,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(if (selected) 24.dp else 22.dp)
                         )
-                        AnimatedVisibility(
-                            visible = selected,
-                            enter = fadeIn(animationSpec = tween(250, delayMillis = 80)) +
-                                    slideInHorizontally(
-                                        initialOffsetX = { it / 3 },
-                                        animationSpec = tween(300, easing = FastOutSlowInEasing)
-                                    ),
-                            exit = fadeOut(animationSpec = tween(150)) +
-                                    slideOutHorizontally(
-                                        targetOffsetX = { -it / 3 },
-                                        animationSpec = tween(200, easing = FastOutSlowInEasing)
-                                    )
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = item.label,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center,
-                                    softWrap = false
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = label,
+                            fontSize = 11.sp,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = textColor,
+                            textAlign = TextAlign.Center,
+                            softWrap = false
+                        )
                     }
                 }
             }
         }
     }
-}
-
-private data class NavItem(
-    val screen: Screen,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val label: String
-)
-
-sealed class Screen(val route: String, val label: String) {
-    data object Home : Screen("home", "首页")
-    data object Report : Screen("report", "报表")
-    data object Profile : Screen("profile", "我的")
 }

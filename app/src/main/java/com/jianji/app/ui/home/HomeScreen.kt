@@ -8,9 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,12 +17,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
     val todayExpense by viewModel.todayExpense.collectAsState()
     val todayIncome by viewModel.todayIncome.collectAsState()
     val transactions by viewModel.todayTransactions.collectAsState()
+
+    var hasLoaded by remember { mutableStateOf(false) }
+    val timeFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()) }
+
+    LaunchedEffect(Unit) {
+        hasLoaded = true
+    }
 
     Column(
         modifier = Modifier
@@ -60,17 +68,19 @@ fun HomeScreen(viewModel: HomeViewModel) {
         Spacer(modifier = Modifier.height(12.dp))
 
         if (transactions.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "暂无交易记录",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 15.sp
-                )
+            if (hasLoaded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "暂无交易记录",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 15.sp
+                    )
+                }
             }
         } else {
             LazyColumn(
@@ -87,7 +97,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
                             animationSpec = tween(400, delayMillis = index * 60)
                         )
                     ) {
-                        TransactionItem(transaction)
+                        TransactionItem(transaction, timeFormat)
                     }
                 }
             }
@@ -150,7 +160,7 @@ fun TodaySummaryCard(expense: Double, income: Double) {
 }
 
 @Composable
-fun TransactionItem(transaction: Transaction) {
+fun TransactionItem(transaction: Transaction, timeFormat: SimpleDateFormat) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -164,7 +174,7 @@ fun TransactionItem(transaction: Transaction) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 val categoryText = buildString {
                     append(transaction.category)
                     if (transaction.subCategory != null) {
@@ -177,12 +187,19 @@ fun TransactionItem(transaction: Transaction) {
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                if (transaction.channel != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = transaction.channel,
-                        fontSize = 13.sp,
+                        text = timeFormat.format(Date(transaction.timestamp)),
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (transaction.channel != null) {
+                        Text(
+                            text = transaction.channel,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 if (transaction.note.isNotEmpty()) {
                     Text(

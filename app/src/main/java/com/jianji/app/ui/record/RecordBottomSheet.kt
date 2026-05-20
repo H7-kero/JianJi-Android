@@ -40,13 +40,13 @@ fun RecordBottomSheet(
     val isSaved by viewModel.isSaved.collectAsState()
 
     val categories = if (transactionType == "expense") {
-        viewModel.expenseCategories
+        RecordViewModel.expenseCategories
     } else {
-        viewModel.incomeCategories
+        RecordViewModel.incomeCategories
     }
 
     val availableSubCategories = selectedCategory?.let {
-        viewModel.subCategories[it]
+        RecordViewModel.subCategories[it]
     }
 
     var expression by remember { mutableStateOf("") }
@@ -90,7 +90,7 @@ fun RecordBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-        containerColor = GlassColors.glassBackground,
+        containerColor = GlassColors.glassNavBackground.copy(alpha = 0.92f),
         dragHandle = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -104,7 +104,7 @@ fun RecordBottomSheet(
                         .clip(RoundedCornerShape(3.dp))
                         .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     ) {
@@ -150,7 +150,7 @@ fun RecordBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             AnimatedVisibility(
                 visible = animationStarted,
@@ -166,7 +166,7 @@ fun RecordBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             AnimatedVisibility(
                 visible = animationStarted,
@@ -182,7 +182,7 @@ fun RecordBottomSheet(
                 ) {
                     Text(
                         text = if (expression.isEmpty()) "¥ 0" else "¥ $amountFormatted",
-                        fontSize = 36.sp,
+                        fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
@@ -197,24 +197,10 @@ fun RecordBottomSheet(
                             modifier = Modifier.padding(top = 2.dp)
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = note,
-                        onValueChange = { viewModel.setNote(it) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
-                        placeholder = { Text("添加备注...", fontSize = 14.sp) },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
-                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             AnimatedVisibility(
                 visible = animationStarted,
@@ -242,11 +228,25 @@ fun RecordBottomSheet(
                     if (transactionType == "expense") {
                         Spacer(modifier = Modifier.height(8.dp))
                         ChannelChipRow(
-                            channels = viewModel.channels,
+                            channels = RecordViewModel.channels,
                             selectedChannel = selectedChannel,
                             onChannelSelected = { viewModel.selectChannel(it) }
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = note,
+                        onValueChange = { viewModel.setNote(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        placeholder = { Text("添加备注...", fontSize = 14.sp) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
+                    )
                 }
             }
 
@@ -391,7 +391,7 @@ private fun CategorySelectorRow(
             }
         }
         Text(
-            text = "\u25B8",
+            text = "▸",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

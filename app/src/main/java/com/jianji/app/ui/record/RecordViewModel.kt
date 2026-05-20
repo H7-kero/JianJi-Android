@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 /**
  * 记账 ViewModel
@@ -32,11 +33,10 @@ class RecordViewModel(
     val amount: StateFlow<String> = _amount.asStateFlow()
 
     // 选中的分类
-    private val _selectedCategory = MutableStateFlow<String?>(null)
+    private val _selectedCategory = MutableStateFlow<String?>("餐饮")
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
-    // 选中的子分类
-    private val _selectedSubCategory = MutableStateFlow<String?>(null)
+    private val _selectedSubCategory = MutableStateFlow<String?>(getDefaultSubCategory())
     val selectedSubCategory: StateFlow<String?> = _selectedSubCategory.asStateFlow()
 
     // 选中的支付渠道
@@ -51,30 +51,45 @@ class RecordViewModel(
     private val _isSaved = MutableStateFlow(false)
     val isSaved: StateFlow<Boolean> = _isSaved.asStateFlow()
 
-    // 支出分类列表
-    val expenseCategories = listOf(
-        "餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "其他"
-    )
+    companion object {
+        val expenseCategories = listOf(
+            "餐饮", "交通", "购物", "娱乐", "医疗", "教育", "居住", "其他"
+        )
 
-    // 收入分类列表
-    val incomeCategories = listOf(
-        "工资", "奖金", "投资", "兼职", "其他"
-    )
+        val incomeCategories = listOf(
+            "工资", "奖金", "投资", "兼职", "其他"
+        )
 
-    // 子分类映射（末尾都有"其他"选项）
-    val subCategories = mapOf(
-        "餐饮" to listOf("早餐", "午餐", "晚餐", "宵夜", "饮料", "零食", "水果", "其他"),
-        "交通" to listOf("充电", "停车费", "过路费", "地铁", "打车", "自行车", "其他")
-    )
+        val channels = listOf(
+            "微信", "支付宝", "现金", "银行卡", "京东"
+        )
 
-    // 分类默认子分类
-    private val defaultSubCategories = mapOf(
-        "餐饮" to "早餐",
-        "交通" to "充电"
-    )
+        val subCategories = mapOf(
+            "餐饮" to listOf("早餐", "午餐", "晚餐", "宵夜", "零食", "饮品"),
+            "交通" to listOf("公交", "地铁", "打车", "加油", "停车"),
+            "购物" to listOf("日用品", "服饰", "数码", "美妆", "家居"),
+            "娱乐" to listOf("电影", "游戏", "KTV", "运动", "旅游"),
+            "医疗" to listOf("门诊", "药品", "住院", "体检"),
+            "教育" to listOf("学费", "书籍", "培训", "文具"),
+            "居住" to listOf("房租", "水电", "物业", "维修"),
+            "其他" to listOf("其他"),
+            "工资" to listOf("月薪"),
+            "奖金" to listOf("年终奖", "项目奖"),
+            "投资" to listOf("股票", "基金", "利息"),
+            "兼职" to listOf("兼职收入")
+        )
 
-    // 支付渠道列表
-    val channels = listOf("微信", "支付宝", "京东", "其他")
+        fun getDefaultSubCategory(): String? {
+            val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            return when {
+                hour in 5..10 -> "早餐"
+                hour in 11..13 -> "午餐"
+                hour in 14..16 -> null
+                hour in 17..20 -> "晚餐"
+                else -> "宵夜"
+            }
+        }
+    }
 
     /**
      * 获取某个分类的子分类列表
@@ -88,8 +103,8 @@ class RecordViewModel(
      */
     fun setTransactionType(type: String) {
         _transactionType.value = type
-        _selectedCategory.value = null
-        _selectedSubCategory.value = null
+        _selectedCategory.value = "餐饮"
+        _selectedSubCategory.value = getDefaultSubCategory()
         _selectedChannel.value = "微信"
     }
 
@@ -105,10 +120,8 @@ class RecordViewModel(
      */
     fun selectCategory(category: String) {
         _selectedCategory.value = category
-        // 自动设置默认子分类
-        val defaultSub = defaultSubCategories[category]
-        if (defaultSub != null) {
-            _selectedSubCategory.value = defaultSub
+        if (category == "餐饮") {
+            _selectedSubCategory.value = getDefaultSubCategory()
         }
     }
 
@@ -167,8 +180,8 @@ class RecordViewModel(
      */
     fun resetForm() {
         _amount.value = ""
-        _selectedCategory.value = null
-        _selectedSubCategory.value = null
+        _selectedCategory.value = "餐饮"
+        _selectedSubCategory.value = getDefaultSubCategory()
         _selectedChannel.value = "微信"
         _note.value = ""
     }

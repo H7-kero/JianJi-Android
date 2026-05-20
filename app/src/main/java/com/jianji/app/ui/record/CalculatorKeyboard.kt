@@ -37,9 +37,9 @@ fun CalculatorKeyboard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         KeyRow(
-            keys = listOf("7", "8", "9", "\u231A"),
+            keys = listOf("7", "8", "9", "⌫"),
             onKeyPress = { key ->
-                if (key == "\u231A") onBackspace() else onKeyPress(key)
+                if (key == "⌫") onBackspace() else onKeyPress(key)
             }
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -98,7 +98,7 @@ private fun CalculatorKey(
     )
 
     val isOperator = label in listOf("+", "-", "*", "/")
-    val isBackspace = label == "\u231A"
+    val isBackspace = label == "⌫"
     val isNumber = label in listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".")
 
     val bgColor = when {

@@ -117,7 +117,7 @@ fun ProfileScreen() {
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         AnimatedVisibility(
             visible = animationStarted,
