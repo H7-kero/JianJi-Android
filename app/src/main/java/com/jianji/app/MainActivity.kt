@@ -30,11 +30,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.repository.TransactionRepository
@@ -215,33 +217,26 @@ fun FloatingGlassNavBar(
                 )
             )
     ) {
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 5.dp)
         ) {
-            val tabWidth = maxWidth / 3
             val density = LocalDensity.current
+            var rowSize by remember { mutableStateOf(IntSize.Zero) }
 
-            val indicatorTargetPx = currentPage * with(density) { tabWidth.toPx() }
+            val tabPx = if (rowSize.width > 0) rowSize.width.toFloat() / 3f else 0f
+            val indicatorTargetPx = currentPage * tabPx
             val animatedOffset by animateFloatAsState(
                 targetValue = indicatorTargetPx,
                 animationSpec = spring(dampingRatio = 0.75f, stiffness = 350f),
                 label = "nav_indicator"
             )
 
-            Box(
-                modifier = Modifier
-                    .offset { IntOffset(animatedOffset.roundToInt(), 0) }
-                    .width(tabWidth)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color.Black.copy(alpha = 0.06f))
-            )
-
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { rowSize = it }
             ) {
                 items.forEach { (page, icon, label) ->
                     val selected = currentPage == page
@@ -291,6 +286,18 @@ fun FloatingGlassNavBar(
                         }
                     }
                 }
+            }
+
+            if (rowSize.width > 0) {
+                val indicatorWidth = with(density) { tabPx.toDp() }
+                val indicatorHeight = with(density) { rowSize.height.toDp() }
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(animatedOffset.roundToInt(), 0) }
+                        .size(width = indicatorWidth, height = indicatorHeight)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color.Black.copy(alpha = 0.06f))
+                )
             }
         }
     }
