@@ -7,10 +7,11 @@
  * - dependencies: 项目依赖的第三方库
  */
 plugins {
-    id("com.android.application")      // Android 应用插件
-    id("org.jetbrains.kotlin.android") // Kotlin 插件
-    id("com.google.dagger.hilt.android") // Hilt 依赖注入插件
-    id("com.google.devtools.ksp")      // KSP 代码生成插件（Room 需要）
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -65,14 +66,7 @@ android {
     
     // 构建特性
     buildFeatures {
-        // 启用 Jetpack Compose
         compose = true
-    }
-    
-    // Compose 编译器选项
-    composeOptions {
-        // Compose 编译器版本，必须与 Kotlin 2.0.x 兼容
-        kotlinCompilerExtensionVersion = "1.5.15"
     }
 }
 
