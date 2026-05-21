@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.minHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -290,7 +291,7 @@ fun RecordBottomSheet(
 }
 
 @Composable
-private fun TypeToggle(
+internal fun TypeToggle(
     selectedType: String,
     onTypeSelected: (String) -> Unit
 ) {
@@ -358,7 +359,7 @@ private fun TypeChip(
 }
 
 @Composable
-private fun CategorySelectorRow(
+internal fun CategorySelectorRow(
     selectedCategory: String?,
     onClick: () -> Unit
 ) {
@@ -404,7 +405,7 @@ private fun CategorySelectorRow(
 }
 
 @Composable
-private fun SubCategoryChipRow(
+internal fun SubCategoryChipRow(
     subCategories: List<String>,
     selectedSubCategory: String?,
     onSubCategorySelected: (String?) -> Unit
@@ -425,7 +426,7 @@ private fun SubCategoryChipRow(
 }
 
 @Composable
-private fun ChannelChipRow(
+internal fun ChannelChipRow(
     channels: List<String>,
     selectedChannel: String,
     onChannelSelected: (String) -> Unit
@@ -483,7 +484,7 @@ private fun SelectableChip(
     }
 }
 
-private fun formatAmount(value: Double): String {
+internal fun formatAmount(value: Double): String {
     return if (value == value.toLong().toDouble()) {
         value.toLong().toString()
     } else {

@@ -2,9 +2,7 @@ package com.jianji.app.ui.home
 
 import android.os.Build
 import android.view.HapticFeedbackConstants
-import androidx.compose.animation.core.animateScroll
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -15,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -44,14 +41,14 @@ fun <T> WheelPicker(
 
     LaunchedEffect(selectedIndex) {
         val targetIndex = selectedIndex - visibleItems / 2
-        if (listState.firstVisibleItemIndex != targetIndex || listState.firstVisibleScrollOffset > 5) {
+        if (listState.firstVisibleItemIndex != targetIndex || listState.firstVisibleItemScrollOffset > 5) {
             listState.animateScrollToItem(targetIndex, 0)
         }
     }
 
     val currentCenterIndex = remember {
         derivedStateOf {
-            val centerOffset = listState.firstVisibleScrollOffset / itemHeightPx
+            val centerOffset = listState.firstVisibleItemScrollOffset / itemHeightPx
             (listState.firstVisibleItemIndex + centerOffset).roundToInt() + visibleItems / 2
         }
     }
@@ -69,13 +66,7 @@ fun <T> WheelPicker(
     Box(modifier = modifier.height(itemHeight * visibleItems)) {
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectDragGestures { change, _ ->
-                        change.consume()
-                    }
-                },
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(vertical = itemHeight * (visibleItems / 2))
         ) {

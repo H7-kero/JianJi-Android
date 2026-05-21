@@ -121,6 +121,7 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 private fun TodaySummaryCard(
     expense: Double,
