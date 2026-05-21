@@ -24,17 +24,17 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 
-val iosSpring = spring(
+val iosSpring = spring<Float>(
     dampingRatio = Spring.DampingRatioMediumBouncy,
     stiffness = Spring.StiffnessMedium
 )
 
-val iosSnappy = spring(
+val iosSnappy = spring<Float>(
     dampingRatio = Spring.DampingRatioNoBouncy,
     stiffness = Spring.StiffnessHigh
 )
 
-val iOSEaseInOut = tween(
+val iOSEaseInOut = tween<Float>(
     durationMillis = 350,
     easing = FastOutSlowInEasing
 )
@@ -67,7 +67,7 @@ val iOSFABEnter: EnterTransition = scaleIn(initialScale = 0.8f, animationSpec = 
 val iOSFABExit: ExitTransition = scaleOut(targetScale = 0.8f, animationSpec = iosSnappy) +
     fadeOut(animationSpec = iOSEaseInOut)
 
-val iOSColorTransition = tween(
+val iOSColorTransition = tween<Float>(
     durationMillis = 300,
     easing = FastOutSlowInEasing
 )
@@ -92,7 +92,7 @@ fun Modifier.iosPressEffect(onClick: () -> Unit): Modifier = composed {
     )
 }
 
-val glassHighlightAnimation = spring(
+val glassHighlightAnimation = spring<Float>(
     dampingRatio = Spring.DampingRatioMediumBouncy,
     stiffness = Spring.StiffnessMediumLow
 )
