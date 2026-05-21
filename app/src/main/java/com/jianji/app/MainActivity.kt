@@ -7,13 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -32,6 +31,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,9 +39,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jianji.app.data.repository.TransactionRepository
 import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
-import com.jianji.app.ui.profile.AutoAccountingPreferences
 import com.jianji.app.ui.profile.FabPreferences
 import com.jianji.app.ui.profile.ProfileScreen
 import com.jianji.app.ui.record.RecordBottomSheet
@@ -51,6 +51,7 @@ import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.BlurRadius
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
+import com.jianji.app.ui.theme.iOSColorSpec
 import com.jianji.app.ui.theme.iosSpring
 import com.jianji.app.ui.theme.iosSnappy
 import kotlinx.coroutines.launch
@@ -61,102 +62,101 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val database = com.jianji.app.data.local.AppDatabase.getDatabase(this)
+        val transactionDao = database.transactionDao()
+        val repository = TransactionRepository(transactionDao)
+
         setContent {
-            JianJiApp()
+            MaterialTheme {
+                JianJiApp(repository)
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun JianJiApp() {
-    MaterialTheme {
-        val homeViewModel = remember { HomeViewModel() }
-        val reportViewModel = remember { ReportViewModel() }
-        val recordViewModel = remember { RecordViewModel() }
-        val pagerState = rememberPagerState(pageCount = { 3 })
-        val coroutineScope = rememberCoroutineScope()
+fun JianJiApp(repository: TransactionRepository) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
-        var showRecordSheet by remember { mutableStateOf(false) }
-        var fabVisible by remember { mutableStateOf(true) }
-        var fabPosition by remember { mutableStateOf("left") }
-        val context = androidx.compose.ui.platform.LocalContext.current
+    val homeViewModel = remember { HomeViewModel(repository) }
+    val reportViewModel = remember { ReportViewModel(repository) }
+    val recordViewModel = remember { RecordViewModel(repository) }
 
-        LaunchedEffect(Unit) {
-            FabPreferences.getFabPosition(context).collect { position ->
-                fabPosition = position
-            }
-        }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showRecordSheet by remember { mutableStateOf(false) }
 
-        val navBarHeight = 56
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val fabVisible = pagerState.currentPage != 2
 
-        if (pagerState.currentPage == 0) {
-            LaunchedEffect(pagerState.currentPage) {
-                fabVisible = true
-            }
-        } else {
-            LaunchedEffect(pagerState.currentPage) {
-                fabVisible = false
-            }
-        }
+    val fabPosition by FabPreferences
+        .getFabPosition(context)
+        .collectAsState(initial = "left")
 
-        val sheetState = rememberModalBottomSheetState()
+    val navBarHeight = 56
 
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(GlassColors.glassBackground)
+    ) {
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .background(GlassColors.glassBackground)
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding()
-            ) { page ->
-                when (page) {
-                    0 -> HomeScreen(homeViewModel)
-                    1 -> ReportScreen(reportViewModel)
-                    2 -> ProfileScreen()
+                .navigationBarsPadding()
+        ) { page ->
+            when (page) {
+                0 -> HomeScreen(homeViewModel)
+                1 -> ReportScreen(reportViewModel)
+                2 -> ProfileScreen()
+            }
+        }
+
+        FloatingGlassNavBar(
+            currentPage = pagerState.currentPage,
+            onPageSelected = { page ->
+                coroutineScope.launch {
+                    pagerState.animateScrollToPage(page)
                 }
-            }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 10.dp)
+        )
 
-            FloatingGlassNavBar(
-                currentPage = pagerState.currentPage,
-                onPageSelected = { page ->
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(page)
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
-                    .padding(bottom = 10.dp)
-            )
-
-            AnimatedVisibility(
-                visible = fabVisible,
-                enter = scaleIn(animationSpec = iosSpring) +
-                        fadeIn(animationSpec = tween(200)),
-                exit = scaleOut(animationSpec = iosSnappy) +
-                        fadeOut(animationSpec = tween(150)),
-                modifier = Modifier
-                    .align(if (fabPosition == "left") Alignment.BottomStart else Alignment.BottomEnd)
-                    .padding(
-                        start = if (fabPosition == "left") 48.dp else 0.dp,
-                        end = if (fabPosition == "right") 48.dp else 0.dp,
-                        bottom = (navBarHeight + 94).dp
-                    )
-            ) {
-                FAB(onClick = { showRecordSheet = true })
-            }
+        AnimatedVisibility(
+            visible = fabVisible,
+            enter = scaleIn(animationSpec = iosSpring) +
+                    fadeIn(animationSpec = tween(200)),
+            exit = scaleOut(animationSpec = iosSnappy) +
+                    fadeOut(animationSpec = tween(150)),
+            modifier = Modifier
+                .align(if (fabPosition == "left") Alignment.BottomStart else Alignment.BottomEnd)
+                .padding(
+                    start = if (fabPosition == "left") 48.dp else 0.dp,
+                    end = if (fabPosition == "right") 48.dp else 0.dp,
+                    bottom = (navBarHeight + 94).dp
+                )
+        ) {
+            FAB(onClick = { showRecordSheet = true })
         }
+    }
 
-        if (showRecordSheet) {
-            RecordBottomSheet(
-                viewModel = recordViewModel,
-                onDismiss = { showRecordSheet = false },
-                sheetState = sheetState
-            )
-        }
+    if (showRecordSheet) {
+        RecordBottomSheet(
+            viewModel = recordViewModel,
+            onDismiss = {
+                coroutineScope.launch {
+                    sheetState.hide()
+                }.invokeOnCompletion {
+                    showRecordSheet = false
+                }
+            },
+            sheetState = sheetState
+        )
     }
 }
 
@@ -266,14 +266,14 @@ fun FloatingGlassNavBar(
                     val iconTint by animateColorAsState(
                         targetValue = if (selected) GlassColors.iosBlue
                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
-                        animationSpec = iosSpring,
+                        animationSpec = iOSColorSpec,
                         label = "nav_icon"
                     )
 
                     val textColor by animateColorAsState(
                         targetValue = if (selected) GlassColors.iosBlue
                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
-                        animationSpec = iosSpring,
+                        animationSpec = iOSColorSpec,
                         label = "nav_text"
                     )
 

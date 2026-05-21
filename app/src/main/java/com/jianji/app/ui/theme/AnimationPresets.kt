@@ -2,7 +2,6 @@ package com.jianji.app.ui.theme
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -13,9 +12,11 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,26 +24,36 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 
-val iosSpring: AnimationSpec<Float> = spring(
+val iosSpring = spring(
     dampingRatio = Spring.DampingRatioMediumBouncy,
     stiffness = Spring.StiffnessMedium
 )
 
-val iosSnappy: AnimationSpec<Float> = spring(
+val iosSnappy = spring(
     dampingRatio = Spring.DampingRatioNoBouncy,
     stiffness = Spring.StiffnessHigh
 )
 
-val iOSEaseInOut: AnimationSpec<Float> = tween(
+val iOSEaseInOut = tween(
     durationMillis = 350,
     easing = FastOutSlowInEasing
 )
 
+val iosSpringOffset = spring<IntOffset>(
+    dampingRatio = Spring.DampingRatioMediumBouncy,
+    stiffness = Spring.StiffnessMedium
+)
+
+val iosSnappyOffset = spring<IntOffset>(
+    dampingRatio = Spring.DampingRatioNoBouncy,
+    stiffness = Spring.StiffnessHigh
+)
+
 val iOSPageEnter: EnterTransition = fadeIn(animationSpec = iOSEaseInOut) +
-    slideInVertically(initialOffsetY = { it / 10 }, animationSpec = iosSpring)
+    slideInVertically(initialOffsetY = { it / 10 }, animationSpec = iosSpringOffset)
 
 val iOSPageExit: ExitTransition = fadeOut(animationSpec = iOSEaseInOut) +
-    slideOutVertically(targetOffsetY = { it / 10 }, animationSpec = iosSpring)
+    slideOutVertically(targetOffsetY = { it / 10 }, animationSpec = iosSpringOffset)
 
 val iOSDialogEnter: EnterTransition = scaleIn(initialScale = 0.95f, animationSpec = iosSpring) +
     fadeIn(animationSpec = tween(durationMillis = 200))
@@ -56,7 +67,12 @@ val iOSFABEnter: EnterTransition = scaleIn(initialScale = 0.8f, animationSpec = 
 val iOSFABExit: ExitTransition = scaleOut(targetScale = 0.8f, animationSpec = iosSnappy) +
     fadeOut(animationSpec = iOSEaseInOut)
 
-val iOSColorTransition: AnimationSpec<Float> = tween(
+val iOSColorTransition = tween(
+    durationMillis = 300,
+    easing = FastOutSlowInEasing
+)
+
+val iOSColorSpec = tween<Color>(
     durationMillis = 300,
     easing = FastOutSlowInEasing
 )
@@ -64,19 +80,19 @@ val iOSColorTransition: AnimationSpec<Float> = tween(
 fun Modifier.iosPressEffect(onClick: () -> Unit): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by androidx.compose.animation.core.animateFloatAsState(
+    val pressScale by androidx.compose.animation.core.animateFloatAsState(
         targetValue = if (isPressed) 0.97f else 1f,
         animationSpec = iosSnappy,
         label = "ios_press_scale"
     )
-    scale(scale).clickable(
+    this.scale(pressScale).clickable(
         interactionSource = interactionSource,
         indication = null,
         onClick = onClick
     )
 }
 
-val glassHighlightAnimation: AnimationSpec<Float> = spring(
+val glassHighlightAnimation = spring(
     dampingRatio = Spring.DampingRatioMediumBouncy,
     stiffness = Spring.StiffnessMediumLow
 )
