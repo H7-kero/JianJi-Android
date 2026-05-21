@@ -45,8 +45,12 @@ import com.jianji.app.ui.home.HomeScreen
 import com.jianji.app.ui.home.HomeViewModel
 import com.jianji.app.ui.profile.FabPreferences
 import com.jianji.app.ui.profile.ProfileScreen
+import com.jianji.app.ui.record.EditTransactionSheet
 import com.jianji.app.ui.record.RecordBottomSheet
 import com.jianji.app.ui.record.RecordViewModel
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
+import java.time.LocalDate
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.BlurRadius
@@ -85,6 +89,10 @@ fun JianJiApp(repository: TransactionRepository) {
     val reportViewModel = remember { ReportViewModel(repository) }
     val recordViewModel = remember { RecordViewModel(repository) }
 
+    val hazeState = remember { HazeState() }
+    var showEditSheet by remember { mutableStateOf(false) }
+    val editingTransaction by homeViewModel.editingTransaction.collectAsState()
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showRecordSheet by remember { mutableStateOf(false) }
 
@@ -106,10 +114,11 @@ fun JianJiApp(repository: TransactionRepository) {
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
+                .hazeSource(state = hazeState)
                 .navigationBarsPadding()
         ) { page ->
             when (page) {
-                0 -> HomeScreen(homeViewModel)
+                0 -> HomeScreen(homeViewModel, hazeState)
                 1 -> ReportScreen(reportViewModel)
                 2 -> ProfileScreen()
             }
@@ -157,6 +166,26 @@ fun JianJiApp(repository: TransactionRepository) {
                 }
             },
             sheetState = sheetState
+        )
+    }
+
+    LaunchedEffect(editingTransaction) {
+        if (editingTransaction != null && !showEditSheet) {
+            recordViewModel.loadTransaction(editingTransaction!!)
+            showEditSheet = true
+        }
+    }
+
+    if (showEditSheet && editingTransaction != null) {
+        val editSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        EditTransactionSheet(
+            transaction = editingTransaction!!,
+            viewModel = recordViewModel,
+            onDismiss = {
+                showEditSheet = false
+                homeViewModel.stopEditing()
+            },
+            sheetState = editSheetState
         )
     }
 }
@@ -318,7 +347,7 @@ fun FloatingGlassNavBar(
                     modifier = Modifier
                         .offset { IntOffset(animatedOffset.roundToInt(), 0) }
                         .size(width = indicatorWidth, height = indicatorHeight)
-                        .clip(LiquidGlassShapes.large)
+                        .clip(RoundedCornerShape(16.dp))
                         .background(Color.Black.copy(alpha = 0.06f))
                 )
             }

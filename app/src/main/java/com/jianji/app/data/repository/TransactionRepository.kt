@@ -96,6 +96,20 @@ class TransactionRepository @Inject constructor(
             .map { it ?: 0.0 }
     }
 
+    fun getExpenseByDateRange(startTime: Long, endTime: Long): Flow<Double> {
+        return transactionDao.getTotalExpense(startTime, endTime)
+            .map { it ?: 0.0 }
+    }
+
+    fun getIncomeByDateRange(startTime: Long, endTime: Long): Flow<Double> {
+        return transactionDao.getTotalIncome(startTime, endTime)
+            .map { it ?: 0.0 }
+    }
+
+    fun getTransactionsByDateRange(startTime: Long, endTime: Long): Flow<List<Transaction>> {
+        return transactionDao.getTransactionsByDateRange(startTime, endTime)
+    }
+
     /**
      * 添加交易记录
      * @param transaction 要添加的交易记录

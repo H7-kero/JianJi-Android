@@ -104,7 +104,9 @@ dependencies {
     implementation("androidx.compose.material3:material3-android")
     // Material 图标扩展
     implementation("androidx.compose.material:material-icons-extended")
-    
+    implementation("dev.chrisbanes.haze:haze:1.7.2")
+    implementation("dev.chrisbanes.haze:haze-materials:1.7.2")
+
     // Material Components 库（提供 XML 主题资源）
     implementation("com.google.android.material:material:1.12.0")
     

@@ -246,9 +246,9 @@ fun RecordBottomSheet(
                         onValueChange = { viewModel.setNote(it) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
+                            .minHeight(48.dp),
                         placeholder = { Text("添加备注...", fontSize = 14.sp) },
-                        singleLine = true,
+                        maxLines = 3,
                         shape = RoundedCornerShape(12.dp),
                         textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
                     )

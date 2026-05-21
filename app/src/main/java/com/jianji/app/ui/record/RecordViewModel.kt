@@ -185,4 +185,37 @@ class RecordViewModel(
         _selectedChannel.value = "微信"
         _note.value = ""
     }
+
+    private val _editingTransactionId = MutableStateFlow<Long?>(null)
+    val editingTransactionId: StateFlow<Long?> = _editingTransactionId.asStateFlow()
+
+    fun loadTransaction(transaction: Transaction) {
+        _editingTransactionId.value = transaction.id
+        _transactionType.value = transaction.type
+        _selectedCategory.value = transaction.category
+        _selectedSubCategory.value = transaction.subCategory
+        _selectedChannel.value = transaction.channel ?: "微信"
+        _note.value = transaction.note
+    }
+
+    fun updateTransaction(originalId: Long) {
+        viewModelScope.launch {
+            val amountValue = _amount.value.toDoubleOrNull() ?: return@launch
+            val category = _selectedCategory.value ?: return@launch
+
+            val updated = Transaction(
+                id = originalId,
+                amount = amountValue,
+                category = category,
+                subCategory = _selectedSubCategory.value,
+                channel = _selectedChannel.value,
+                type = _transactionType.value,
+                note = _note.value,
+                source = "manual"
+            )
+
+            repository.updateTransaction(updated)
+            _isSaved.value = true
+        }
+    }
 }
