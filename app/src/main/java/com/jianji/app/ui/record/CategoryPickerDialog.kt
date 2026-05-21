@@ -1,13 +1,13 @@
 package com.jianji.app.ui.record
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,28 +25,57 @@ import androidx.compose.ui.window.DialogProperties
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
 
+val categoryEmojiMap = mapOf(
+    "餐饮" to "\uD83C\uDF5C",
+    "交通" to "\uD83D\uDE97",
+    "购物" to "\uD83D\uDECD\uFE0F",
+    "娱乐" to "\uD83C\uDFAE",
+    "医疗" to "\uD83D\uDC8A",
+    "教育" to "\uD83D\uDCDA",
+    "居住" to "\uD83C\uDFE0",
+    "其他" to "\uD83D\uDCB0",
+    "工资" to "\uD83D\uDCB0",
+    "奖金" to "\uD83C\uDF81",
+    "投资" to "\uD83D\uDCC8",
+    "兼职" to "\uD83D\uDCBC"
+)
+
 @Composable
 fun CategoryPickerDialog(
     categories: List<String>,
     onCategorySelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    var internalVisible by remember { mutableStateOf(true) }
+    var pendingCategory by remember { mutableStateOf<String?>(null) }
+
+    fun triggerDismiss(category: String? = null) {
+        pendingCategory = category
+        internalVisible = false
+    }
+
     Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        onDismissRequest = {
+            triggerDismiss()
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false
+        )
     ) {
         AnimatedVisibility(
-            visible = true,
+            visible = internalVisible,
             enter = scaleIn(
-                initialScale = 0.88f,
-                transformOrigin = TransformOrigin(0.5f, 0.5f),
-                animationSpec = tween(350)
-            ) + fadeIn(animationSpec = tween(300)),
+                initialScale = 0.7f,
+                transformOrigin = TransformOrigin(0.5f, 0.35f),
+                animationSpec = spring(dampingRatio = 0.65f, stiffness = 450f)
+            ) + fadeIn(animationSpec = tween(200)),
             exit = scaleOut(
-                targetScale = 0.88f,
-                transformOrigin = TransformOrigin(0.5f, 0.5f),
-                animationSpec = tween(250)
-            ) + fadeOut(animationSpec = tween(200))
+                targetScale = 0.7f,
+                transformOrigin = TransformOrigin(0.5f, 0.35f),
+                animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f)
+            ) + fadeOut(animationSpec = tween(150))
         ) {
             Box(
                 modifier = Modifier
@@ -73,43 +102,62 @@ fun CategoryPickerDialog(
                         shape = LiquidGlassShapes.card
                     )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
                         text = "选择分类",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    LazyColumn(
-                        modifier = Modifier.heightIn(max = 420.dp)
-                    ) {
-                        items(categories) { category ->
-                            val bgColor by animateColorAsState(
-                                targetValue = GlassColors.glassCardBackground,
-                                animationSpec = tween(250),
-                                label = "cat_bg"
-                            )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 3.dp)
-                                    .clip(LiquidGlassShapes.small)
-                                    .background(bgColor)
-                                    .clickable { onCategorySelected(category) }
-                                    .padding(horizontal = 16.dp, vertical = 14.dp)
-                            ) {
-                                Text(
-                                    text = "${categoryEmojiMap[category] ?: ""} $category",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
+                    categories.forEach { category ->
+                        val bgColor = GlassColors.glassSurface
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 3.dp)
+                                .clip(LiquidGlassShapes.small)
+                                .background(bgColor)
+                                .clickable {
+                                    triggerDismiss(category)
+                                }
+                                .padding(horizontal = 20.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(
+                                text = "${categoryEmojiMap[category] ?: "\uD83D\uDCC2"}  $category",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    TextButton(onClick = {
+                        triggerDismiss()
+                    }) {
+                        Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+
+        if (!internalVisible) {
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(200)
+                val category = pendingCategory
+                if (category != null) {
+                    onCategorySelected(category)
+                } else {
+                    onDismiss()
                 }
             }
         }
