@@ -49,9 +49,8 @@ fun GlassCard(
     contentColor: Color = Color.Unspecified,
     elevation: Dp = 2.dp,
     borderAlpha: Float = 0.06f,
-    content: @Composable ColumnScope.() -> Unit
+    cardBody: @Composable ColumnScope.() -> Unit
 ) {
-    val cardContent: @Composable ColumnScope.() -> Unit = content
     ElevatedCard(
         modifier = modifier
             .shadow(
@@ -84,7 +83,7 @@ fun GlassCard(
                         )
                     )
             ) {
-                cardContent()
+                cardBody()
             }
         }
     )
