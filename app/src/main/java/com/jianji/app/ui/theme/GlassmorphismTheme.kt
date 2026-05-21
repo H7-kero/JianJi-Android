@@ -4,12 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,7 +28,6 @@ object GlassColors {
     val glassHighlight = Color.White.copy(alpha = 0.55f)
     val glassShadow = Color.Black.copy(alpha = 0.08f)
     val iosBlue = Color(0xFF007AFF)
-    val separator = Color(0x1A000000)
 }
 
 object LiquidGlassShapes {
@@ -72,6 +69,7 @@ fun GlassCard(
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
         content = {
+            val scope = this
             Box(
                 modifier = Modifier
                     .background(
@@ -83,7 +81,7 @@ fun GlassCard(
                         )
                     )
             ) {
-                cardBody()
+                scope.cardBody()
             }
         }
     )
