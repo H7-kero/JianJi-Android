@@ -7,9 +7,9 @@
  */
 pluginManagement {
     repositories {
-        google()          // Google 的 Maven 仓库，有 Android 相关库
-        mavenCentral()    // Maven 中央仓库，最常用的开源库仓库
-        gradlePluginPortal() // Gradle 插件仓库
+        google()
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 

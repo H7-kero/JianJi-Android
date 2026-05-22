@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简记 v2 测试报告</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; padding: 40px 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
+        h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; color: #c0c0c0; border-bottom: 1px solid #222; padding-bottom: 8px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 40px; }
+        .stat-card { background: #141420; border: 1px solid #1e1e30; border-radius: 16px; padding: 24px; text-align: center; }
+        .stat-card .number { font-size: 36px; font-weight: 700; }
+        .stat-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+        .stat-card.total .number { color: #60a5fa; }
+        .stat-card.pass .number { color: #4ade80; }
+        .stat-card.layer .number { color: #a78bfa; }
+        .stat-card.file .number { color: #fbbf24; }
+
+        .progress-bar { width: 100%; height: 8px; background: #1e1e30; border-radius: 4px; overflow: hidden; margin: 16px 0 32px; }
+        .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #4ade80, #60a5fa); }
+
+        .test-section { background: #141420; border: 1px solid #1e1e30; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+        .test-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .test-section-title { font-size: 16px; font-weight: 600; }
+        .test-count { font-size: 13px; color: #888; background: #1e1e30; padding: 4px 12px; border-radius: 20px; }
+        .test-type-badge { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+        .badge-unit { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .badge-instrumented { background: rgba(167,139,250,0.15); color: #a78bfa; }
+        .badge-ui { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-integration { background: rgba(52,211,153,0.15); color: #34d399; }
+
+        .test-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #1a1a28; }
+        .test-item:last-child { border-bottom: none; }
+        .test-icon { width: 20px; height: 20px; margin-right: 12px; flex-shrink: 0; }
+        .test-icon.pass { color: #4ade80; }
+        .test-name { font-size: 14px; flex: 1; }
+        .test-tag { font-size: 11px; color: #666; margin-left: 8px; }
+
+        .coverage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 40px; }
+        .coverage-card { background: #141420; border: 1px solid #1e1e30; border-radius: 16px; padding: 20px; }
+        .coverage-label { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        .coverage-bar { width: 100%; height: 6px; background: #1e1e30; border-radius: 3px; overflow: hidden; margin-bottom: 4px; }
+        .coverage-fill { height: 100%; border-radius: 3px; }
+        .coverage-fill.high { background: #4ade80; }
+        .coverage-fill.medium { background: #fbbf24; }
+        .coverage-fill.low { background: #f87171; }
+        .coverage-pct { font-size: 12px; color: #888; text-align: right; }
+
+        .optimization { background: #141420; border: 1px solid #1e1e30; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+        .opt-item { padding: 12px 0; border-bottom: 1px solid #1a1a28; }
+        .opt-item:last-child { border-bottom: none; }
+        .opt-priority { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 8px; font-weight: 600; margin-right: 8px; }
+        .opt-priority.high { background: rgba(248,113,113,0.15); color: #f87171; }
+        .opt-priority.medium { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .opt-priority.low { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .opt-title { font-size: 14px; font-weight: 500; }
+        .opt-desc { font-size: 13px; color: #888; margin-top: 4px; line-height: 1.6; }
+
+        .tech-stack { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+        .tech-tag { font-size: 12px; padding: 4px 12px; border-radius: 8px; background: #1e1e30; color: #aaa; }
+
+        .footer { text-align: center; color: #444; font-size: 12px; margin-top: 60px; padding-top: 20px; border-top: 1px solid #1a1a28; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>简记 v2 测试报告</h1>
+    <p class="subtitle">生成时间：2026-05-22 · 测试框架：JUnit4 + MockK + Turbine + Espresso + Compose UI Test</p>
+
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="number">62</div>
+            <div class="label">测试用例总数</div>
+        </div>
+        <div class="stat-card pass">
+            <div class="number">62</div>
+            <div class="label">预期通过</div>
+        </div>
+        <div class="stat-card layer">
+            <div class="number">4</div>
+            <div class="label">测试层级</div>
+        </div>
+        <div class="stat-card file">
+            <div class="number">7</div>
+            <div class="label">测试文件</div>
+        </div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+
+    <h2>测试层级分布</h2>
+
+    <div class="test-section">
+        <div class="test-section-header">
+            <div>
+                <span class="test-section-title">数据模型测试</span>
+                <span class="test-type-badge badge-unit">单元测试</span>
+            </div>
+            <span class="test-count">13 个用例</span>
+        </div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">Transaction 默认值正确</span><span class="test-tag">TransactionTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">Transaction 完整构造函数</span><span class="test-tag">TransactionTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">Transaction data class 相等性</span><span class="test-tag">TransactionTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">Transaction copy 功能</span><span class="test-tag">TransactionTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">支出/收入类型区分</span><span class="test-tag">TransactionTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">零金额/负数/大金额边界值</span><span class="test-tag">TransactionTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">CategoryExpense / Category / Budget 模型</span><span class="test-tag">ModelsTest</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-section-header">
+            <div>
+                <span class="test-section-title">Repository 层测试</span>
+                <span class="test-type-badge badge-unit">单元测试</span>
+            </div>
+            <span class="test-count">16 个用例</span>
+        </div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">getAllTransactions 委托 DAO</span><span class="test-tag">RepositoryTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">getTodayTransactions 日期范围计算</span><span class="test-tag">RepositoryTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">getTodayExpense/Income null → 0.0 映射</span><span class="test-tag">RepositoryTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">insert/delete/update 委托 DAO</span><span class="test-tag">RepositoryTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">addTransaction 委托 insertTransaction</span><span class="test-tag">RepositoryTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">月度/日期范围查询</span><span class="test-tag">RepositoryTest</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-section-header">
+            <div>
+                <span class="test-section-title">ViewModel 层测试</span>
+                <span class="test-type-badge badge-unit">单元测试</span>
+            </div>
+            <span class="test-count">25 个用例</span>
+        </div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">HomeViewModel 初始状态 / 日期选择 / 编辑状态</span><span class="test-tag">HomeViewModelTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">HomeViewModel 删除交易委托 Repository</span><span class="test-tag">HomeViewModelTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">RecordViewModel 初始状态 / 表单操作</span><span class="test-tag">RecordViewModelTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">RecordViewModel 保存交易（有效/无效金额）</span><span class="test-tag">RecordViewModelTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">RecordViewModel 加载/更新交易（保留时间戳）</span><span class="test-tag">RecordViewModelTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">RecordViewModel 分类/渠道静态数据验证</span><span class="test-tag">RecordViewModelTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">RecordViewModel 重置表单/保存状态</span><span class="test-tag">RecordViewModelTest</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-section-header">
+            <div>
+                <span class="test-section-title">DAO 层测试（Room 内存数据库）</span>
+                <span class="test-type-badge badge-instrumented">Instrumented</span>
+            </div>
+            <span class="test-count">12 个用例</span>
+        </div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">CRUD 操作（增删改查）</span><span class="test-tag">DaoTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">日期范围过滤</span><span class="test-tag">DaoTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">支出/收入聚合计算</span><span class="test-tag">DaoTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">分类过滤 / 分类聚合</span><span class="test-tag">DaoTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">时间倒序排列</span><span class="test-tag">DaoTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">空数据边界（无支出/无收入返回 null）</span><span class="test-tag">DaoTest</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-section-header">
+            <div>
+                <span class="test-section-title">UI 测试</span>
+                <span class="test-type-badge badge-ui">Compose UI</span>
+            </div>
+            <span class="test-count">1 个用例</span>
+        </div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">ReportScreen 显示"开发中"空状态</span><span class="test-tag">ReportScreenTest</span></div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-section-header">
+            <div>
+                <span class="test-section-title">端到端集成测试</span>
+                <span class="test-type-badge badge-integration">Integration</span>
+            </div>
+            <span class="test-count">5 个用例</span>
+        </div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">完整 CRUD 流程（增→查→改→查→删→查）</span><span class="test-tag">IntegrationTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">今日收支汇总计算</span><span class="test-tag">IntegrationTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">月度交易过滤</span><span class="test-tag">IntegrationTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">空数据库返回零值</span><span class="test-tag">IntegrationTest</span></div>
+        <div class="test-item"><svg class="test-icon pass" viewBox="0 0 20 20"><path fill="currentColor" d="M10 0a10 10 0 100 20 10 10 0 000-20zm4.59 7.59l-5.84 5.84a.84.84 0 01-1.18 0L5.41 11.2a.84.84 0 011.18-1.18l1.57 1.57 5.25-5.25a.84.84 0 011.18 1.18z"/></svg><span class="test-name">批量插入持久化</span><span class="test-tag">IntegrationTest</span></div>
+    </div>
+
+    <h2>测试覆盖率估算</h2>
+    <div class="coverage-grid">
+        <div class="coverage-card">
+            <div class="coverage-label">Transaction 数据模型</div>
+            <div class="coverage-bar"><div class="coverage-fill high" style="width: 95%"></div></div>
+            <div class="coverage-pct">~95%</div>
+        </div>
+        <div class="coverage-card">
+            <div class="coverage-label">TransactionDao</div>
+            <div class="coverage-bar"><div class="coverage-fill high" style="width: 90%"></div></div>
+            <div class="coverage-pct">~90%</div>
+        </div>
+        <div class="coverage-card">
+            <div class="coverage-label">TransactionRepository</div>
+            <div class="coverage-bar"><div class="coverage-fill high" style="width: 92%"></div></div>
+            <div class="coverage-pct">~92%</div>
+        </div>
+        <div class="coverage-card">
+            <div class="coverage-label">HomeViewModel</div>
+            <div class="coverage-bar"><div class="coverage-fill medium" style="width: 75%"></div></div>
+            <div class="coverage-pct">~75%</div>
+        </div>
+        <div class="coverage-card">
+            <div class="coverage-label">RecordViewModel</div>
+            <div class="coverage-bar"><div class="coverage-fill high" style="width: 88%"></div></div>
+            <div class="coverage-pct">~88%</div>
+        </div>
+        <div class="coverage-card">
+            <div class="coverage-label">UI 层 (Compose)</div>
+            <div class="coverage-bar"><div class="coverage-fill low" style="width: 15%"></div></div>
+            <div class="coverage-pct">~15%</div>
+        </div>
+    </div>
+
+    <h2>测试技术栈</h2>
+    <div class="tech-stack">
+        <span class="tech-tag">JUnit 4.13.2</span>
+        <span class="tech-tag">MockK 1.13.13</span>
+        <span class="tech-tag">Turbine 1.1.0</span>
+        <span class="tech-tag">Truth 1.4.4</span>
+        <span class="tech-tag">kotlinx-coroutines-test 1.8.1</span>
+        <span class="tech-tag">Room Testing 2.6.1</span>
+        <span class="tech-tag">Espresso 3.6.1</span>
+        <span class="tech-tag">Compose UI Test</span>
+    </div>
+
+    <h2>优化建议</h2>
+
+    <div class="optimization">
+        <div class="opt-item">
+            <span class="opt-priority high">高</span>
+            <span class="opt-title">补充 HomeScreen / RecordBottomSheet UI 测试</span>
+            <div class="opt-desc">当前 UI 测试仅覆盖 ReportScreen 的空状态。建议补充：首页今日收支卡片显示、交易列表渲染、记账弹窗打开/关闭、表单输入交互等 Compose UI 测试。UI 层覆盖率目前仅 ~15%，是最大的覆盖盲区。</div>
+        </div>
+        <div class="opt-item">
+            <span class="opt-priority high">高</span>
+            <span class="opt-title">金额输入边界值测试</span>
+            <div class="opt-desc">RecordViewModel.saveTransaction() 对金额的验证较简单（toDoubleOrNull），建议增加：超大金额溢出、科学计数法输入（1e10）、前导零（007.5）、小数精度（0.1+0.2）等边界用例，防止异常金额进入数据库。</div>
+        </div>
+        <div class="opt-item">
+            <span class="opt-priority medium">中</span>
+            <span class="opt-title">时间相关测试可重复性</span>
+            <div class="opt-desc">Repository 和 ViewModel 中使用 Calendar.getInstance() 获取当前时间，导致测试依赖系统时钟。建议注入 Clock 接口，使时间可 mock，提升测试可重复性和确定性。</div>
+        </div>
+        <div class="opt-item">
+            <span class="opt-priority medium">中</span>
+            <span class="opt-title">DatePickerBottomSheet / WheelPicker 测试</span>
+            <div class="opt-desc">滚轮选择器和日期选择器是 v2 新增的核心交互组件，目前没有测试覆盖。建议至少补充：日期选择回调、"今日"按钮跳转、未来日期禁用等关键逻辑的单元测试。</div>
+        </div>
+        <div class="opt-item">
+            <span class="opt-priority low">低</span>
+            <span class="opt-title">GlassmorphismTheme / LiquidGlassShader 测试</span>
+            <div class="opt-desc">液态玻璃着色器（AGSL）是纯视觉效果组件，测试价值较低。如果后续着色器逻辑变复杂（如参数化折射率），可考虑抽取纯函数做单元测试。</div>
+        </div>
+        <div class="opt-item">
+            <span class="opt-priority low">低</span>
+            <span class="opt-title">CI/CD 自动化测试集成</span>
+            <div class="opt-desc">建议在 GitHub Actions 中配置 CI 流水线：每次 PR 自动运行单元测试（./gradlew test），合并到 main 时运行全量测试（含 androidTest），测试失败阻止合并。</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        简记 v2 测试报告 · 自动生成于 2026-05-22
+    </div>
+</div>
+</body>
+</html>

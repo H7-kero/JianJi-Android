@@ -126,15 +126,17 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     
     // ===== 测试库 =====
-    // JUnit 单元测试
     testImplementation("junit:junit:4.13.2")
-    // Android 测试扩展
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("app.cash.turbine:turbine:1.1.0")
+    testImplementation("com.google.truth:truth:1.4.4")
+    testImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    // Espresso UI 测试
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    // Compose UI 测试
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    // Compose 调试工具
+    androidTestImplementation("io.mockk:mockk-android:1.13.13")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
