@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>简记 - 首页改版方案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F5F7; color: #1C1C1E; padding: 40px 20px; }
+  h2 { text-align: center; font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+  .subtitle { text-align: center; font-size: 16px; color: #8E8E93; margin-bottom: 40px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 32px; max-width: 1200px; margin: 0 auto; }
+  .card { background: #FFF; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer; }
+  .card:hover { box-shadow: 0 8px 40px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .card.selected { border-color: #007AFF; box-shadow: 0 8px 40px rgba(0,122,255,0.15); }
+  .card-image { overflow: hidden; display: flex; justify-content: center; }
+  .card-body { padding: 20px 24px 24px; }
+  .card-body h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .card-body p { font-size: 14px; color: #8E8E93; line-height: 1.6; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-top: 12px; }
+  .badge-a { background: rgba(0,122,255,0.1); color: #007AFF; }
+  .badge-b { background: rgba(88,86,214,0.1); color: #5856D6; }
+  .badge-c { background: rgba(52,199,89,0.1); color: #34C759; }
+  .selected-label { text-align: center; margin-top: 32px; font-size: 18px; font-weight: 600; color: #007AFF; opacity: 0; transition: opacity 0.3s; }
+  .selected-label.visible { opacity: 1; }
+</style>
+</head>
+<body>
+<h2>简记 · 首页改版方案</h2>
+<p class="subtitle">3个设计方向，点击选择你喜欢的</p>
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#F5F7FA;padding:0;">
+      <div style="max-width:390px;margin:0 auto;background:#F5F7FA;min-height:680px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;position:relative;overflow:hidden;">
+        <div style="padding:60px 20px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <div>
+              <div style="font-size:14px;color:#8E8E93;">5月22日 周四</div>
+              <div style="font-size:28px;font-weight:700;color:#1C1C1E;margin-top:4px;">今日收支</div>
+            </div>
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(0,122,255,0.1);display:flex;align-items:center;justify-content:center;color:#007AFF;font-size:18px;">📅</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);border-radius:24px;padding:24px;border:0.5px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.06);margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;">
+              <div style="flex:1;">
+                <div style="font-size:12px;color:#8E8E93;margin-bottom:4px;">支出</div>
+                <div style="font-size:32px;font-weight:700;color:#FF3B30;">¥128</div>
+              </div>
+              <div style="width:1px;background:rgba(142,142,147,0.2);margin:0 20px;"></div>
+              <div style="flex:1;">
+                <div style="font-size:12px;color:#8E8E93;margin-bottom:4px;">收入</div>
+                <div style="font-size:32px;font-weight:700;color:#34C759;">¥5,000</div>
+              </div>
+            </div>
+            <div style="margin-top:16px;height:4px;background:rgba(0,0,0,0.04);border-radius:2px;overflow:hidden;">
+              <div style="width:30%;height:100%;background:linear-gradient(90deg,#FF3B30,#FF6B6B);border-radius:2px;"></div>
+            </div>
+            <div style="font-size:11px;color:#8E8E93;margin-top:6px;">月预算 ¥3,000 · 已用 30%</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);border-radius:20px;padding:16px;border:0.5px solid rgba(0,0,0,0.06);box-shadow:0 2px 12px rgba(0,0,0,0.04);margin-bottom:20px;">
+            <div style="font-size:14px;font-weight:600;color:#1C1C1E;margin-bottom:12px;">分类概览</div>
+            <div style="display:flex;gap:8px;">
+              <div style="flex:1;text-align:center;padding:10px 0;background:rgba(255,59,48,0.08);border-radius:14px;">
+                <div style="font-size:20px;">🍜</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:4px;">餐饮</div>
+                <div style="font-size:14px;font-weight:600;color:#FF3B30;">¥68</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:10px 0;background:rgba(0,122,255,0.08);border-radius:14px;">
+                <div style="font-size:20px;">🚗</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:4px;">交通</div>
+                <div style="font-size:14px;font-weight:600;color:#007AFF;">¥32</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:10px 0;background:rgba(52,199,89,0.08);border-radius:14px;">
+                <div style="font-size:20px;">🛍</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:4px;">购物</div>
+                <div style="font-size:14px;font-weight:600;color:#34C759;">¥28</div>
+              </div>
+              <div style="flex:1;text-align:center;padding:10px 0;background:rgba(142,142,147,0.08);border-radius:14px;">
+                <div style="font-size:20px;">⋯</div>
+                <div style="font-size:11px;color:#8E8E93;margin-top:4px;">其他</div>
+                <div style="font-size:14px;font-weight:600;color:#8E8E93;">¥0</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:16px;font-weight:600;color:#1C1C1E;margin-bottom:12px;">今日交易</div>
+          <div style="background:rgba(255,255,255,0.7);backdrop-filter:blur(20px);border-radius:16px;border:0.5px solid rgba(0,0,0,0.06);overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(0,0,0,0.04);">
+              <div><div style="font-size:15px;font-weight:500;color:#1C1C1E;">餐饮 · 午餐</div><div style="font-size:12px;color:#8E8E93;margin-top:2px;">12:30 · 微信</div></div>
+              <div style="font-size:16px;font-weight:700;color:#FF3B30;">-¥35</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(0,0,0,0.04);">
+              <div><div style="font-size:15px;font-weight:500;color:#1C1C1E;">交通 · 地铁</div><div style="font-size:12px;color:#8E8E93;margin-top:2px;">08:15 · 支付宝</div></div>
+              <div style="font-size:16px;font-weight:700;color:#FF3B30;">-¥6</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;">
+              <div><div style="font-size:15px;font-weight:500;color:#1C1C1E;">工资 · 月薪</div><div style="font-size:12px;color:#8E8E93;margin-top:2px;">10:00 · 银行卡</div></div>
+              <div style="font-size:16px;font-weight:700;color:#34C759;">+¥5,000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · iOS 原生风</h3>
+      <p>大标题 + 毛玻璃卡片 + 分类概览模块，信息密度适中，视觉层次清晰。预算进度条增加目标感。</p>
+      <span class="badge badge-a">推荐</span>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0D0D0F;padding:0;">
+      <div style="max-width:390px;margin:0 auto;background:#0D0D0F;min-height:680px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;position:relative;overflow:hidden;">
+        <div style="padding:60px 20px 20px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;">
+            <div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.4);">5月22日 周四</div>
+              <div style="font-size:28px;font-weight:700;color:#FFFFFF;margin-top:4px;">简记</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:14px;">🔍</div>
+              <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:14px;">⚙️</div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:28px;padding:28px 24px;border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(0,122,255,0.15),transparent);border-radius:50%;"></div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:8px;">今日结余</div>
+            <div style="font-size:42px;font-weight:700;color:#FFFFFF;margin-bottom:16px;">+¥4,872</div>
+            <div style="display:flex;gap:16px;">
+              <div style="flex:1;background:rgba(255,59,48,0.1);border-radius:16px;padding:14px;">
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">支出</div>
+                <div style="font-size:20px;font-weight:600;color:#FF6B6B;margin-top:4px;">¥128</div>
+              </div>
+              <div style="flex:1;background:rgba(52,199,89,0.1);border-radius:16px;padding:14px;">
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">收入</div>
+                <div style="font-size:20px;font-weight:600;color:#34C759;margin-top:4px;">¥5,000</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:20px;padding:16px;border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="font-size:14px;font-weight:600;color:#FFFFFF;">7日趋势</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.4);">支出</div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:60px;">
+              <div style="flex:1;background:rgba(0,122,255,0.3);border-radius:4px 4px 0 0;height:35%;"></div>
+              <div style="flex:1;background:rgba(0,122,255,0.3);border-radius:4px 4px 0 0;height:55%;"></div>
+              <div style="flex:1;background:rgba(0,122,255,0.3);border-radius:4px 4px 0 0;height:25%;"></div>
+              <div style="flex:1;background:rgba(0,122,255,0.3);border-radius:4px 4px 0 0;height:70%;"></div>
+              <div style="flex:1;background:rgba(0,122,255,0.3);border-radius:4px 4px 0 0;height:45%;"></div>
+              <div style="flex:1;background:rgba(0,122,255,0.3);border-radius:4px 4px 0 0;height:60%;"></div>
+              <div style="flex:1;background:linear-gradient(180deg,#007AFF,#5856D6);border-radius:4px 4px 0 0;height:40%;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">一</div>
+              <div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">二</div>
+              <div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">三</div>
+              <div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">四</div>
+              <div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">五</div>
+              <div style="flex:1;text-align:center;font-size:9px;color:rgba(255,255,255,0.3);">六</div>
+              <div style="flex:1;text-align:center;font-size:9px;color:#007AFF;font-weight:600;">今</div>
+            </div>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:#FFFFFF;margin-bottom:12px;">最近交易</div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:16px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:12px;background:rgba(255,59,48,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">🍜</div>
+                <div><div style="font-size:14px;font-weight:500;color:#FFFFFF;">餐饮 · 午餐</div><div style="font-size:11px;color:rgba(255,255,255,0.3);">12:30 · 微信</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#FF6B6B;">-¥35</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:12px;background:rgba(0,122,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">🚗</div>
+                <div><div style="font-size:14px;font-weight:500;color:#FFFFFF;">交通 · 地铁</div><div style="font-size:11px;color:rgba(255,255,255,0.3);">08:15 · 支付宝</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#FF6B6B;">-¥6</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:12px;background:rgba(52,199,89,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;">💰</div>
+                <div><div style="font-size:14px;font-weight:500;color:#FFFFFF;">工资 · 月薪</div><div style="font-size:11px;color:rgba(255,255,255,0.3);">10:00 · 银行卡</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#34C759;">+¥5,000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · 暗色高级感</h3>
+      <p>深色背景 + 霓虹渐变 + 7日趋势图，信息密度最高，视觉冲击力强。适合夜间使用。</p>
+      <span class="badge badge-b">视觉冲击</span>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#FAFAF8;padding:0;">
+      <div style="max-width:390px;margin:0 auto;background:#FAFAF8;min-height:680px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;position:relative;overflow:hidden;">
+        <div style="padding:60px 20px 20px;">
+          <div style="text-align:center;margin-bottom:28px;">
+            <div style="font-size:13px;color:#999;">5月22日 周四</div>
+            <div style="font-size:14px;color:#666;margin-top:8px;">本月已支出</div>
+            <div style="font-size:48px;font-weight:200;color:#1A1A1A;margin-top:4px;letter-spacing:-2px;">¥1,280</div>
+            <div style="display:inline-flex;gap:16px;margin-top:8px;">
+              <span style="font-size:12px;color:#FF3B30;">↑ 支出 ¥128</span>
+              <span style="font-size:12px;color:#34C759;">↓ 收入 ¥5,000</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:20px;">
+            <div style="flex:1;background:#FFF;border-radius:20px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,0.04);">
+              <div style="width:100%;aspect-ratio:1;background:conic-gradient(#FF3B30 0deg 120deg,#007AFF 120deg 200deg,#34C759 200deg 280deg,#E5E5EA 280deg 360deg);border-radius:50%;position:relative;">
+                <div style="position:absolute;inset:22%;background:#FFF;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                  <span style="font-size:11px;color:#999;">占比</span>
+                </div>
+              </div>
+              <div style="text-align:center;margin-top:8px;font-size:12px;color:#666;">分类占比</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+              <div style="flex:1;background:#FFF;border-radius:16px;padding:12px;box-shadow:0 1px 8px rgba(0,0,0,0.04);display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:11px;color:#999;">日均支出</div>
+                <div style="font-size:22px;font-weight:600;color:#1A1A1A;margin-top:2px;">¥57</div>
+              </div>
+              <div style="flex:1;background:#FFF;border-radius:16px;padding:12px;box-shadow:0 1px 8px rgba(0,0,0,0.04);display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:11px;color:#999;">交易笔数</div>
+                <div style="font-size:22px;font-weight:600;color:#1A1A1A;margin-top:2px;">23</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;">
+            <div style="padding:8px 16px;background:#1A1A1A;border-radius:20px;font-size:13px;color:#FFF;white-space:nowrap;">今天</div>
+            <div style="padding:8px 16px;background:#FFF;border-radius:20px;font-size:13px;color:#666;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.04);">昨天</div>
+            <div style="padding:8px 16px;background:#FFF;border-radius:20px;font-size:13px;color:#666;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.04);">本周</div>
+            <div style="padding:8px 16px;background:#FFF;border-radius:20px;font-size:13px;color:#666;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.04);">本月</div>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:#1A1A1A;margin-bottom:12px;">交易明细</div>
+          <div style="background:#FFF;border-radius:16px;box-shadow:0 1px 8px rgba(0,0,0,0.04);overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid #F2F2F7;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#FF3B30;"></div>
+                <div><div style="font-size:14px;font-weight:500;color:#1A1A1A;">餐饮 · 午餐</div><div style="font-size:11px;color:#999;">12:30 · 微信</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#FF3B30;">-¥35</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:0.5px solid #F2F2F7;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#007AFF;"></div>
+                <div><div style="font-size:14px;font-weight:500;color:#1A1A1A;">交通 · 地铁</div><div style="font-size:11px;color:#999;">08:15 · 支付宝</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#FF3B30;">-¥6</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#34C759;"></div>
+                <div><div style="font-size:14px;font-weight:500;color:#1A1A1A;">工资 · 月薪</div><div style="font-size:11px;color:#999;">10:00 · 银行卡</div></div>
+              </div>
+              <div style="font-size:15px;font-weight:600;color:#34C759;">+¥5,000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · 极简留白</h3>
+      <p>大数字中心 + 环形图 + 时间筛选器，极简克制，留白多。强调数据本身而非装饰。</p>
+      <span class="badge badge-c">克制</span>
+    </div>
+  </div>
+</div>
+<div class="selected-label" id="selectedLabel">✓ 已选择方案 A</div>
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const choice = el.dataset.choice;
+  const names = {a:'A · iOS 原生风', b:'B · 暗色高级感', c:'C · 极简留白'};
+  const label = document.getElementById('selectedLabel');
+  label.textContent = '✓ 已选择 ' + names[choice];
+  label.classList.add('visible');
+}
+</script>
+</body>
+</html>
