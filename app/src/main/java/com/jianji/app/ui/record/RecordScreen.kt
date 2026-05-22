@@ -35,13 +35,13 @@ fun RecordScreen(viewModel: RecordViewModel) {
     val isSaved by viewModel.isSaved.collectAsState()
 
     val categories = if (transactionType == "expense") {
-        viewModel.expenseCategories
+        RecordViewModel.expenseCategories
     } else {
-        viewModel.incomeCategories
+        RecordViewModel.incomeCategories
     }
 
     val availableSubCategories = selectedCategory?.let {
-        viewModel.subCategories[it]
+        RecordViewModel.subCategories[it]
     }
 
     LaunchedEffect(isSaved) {
@@ -117,7 +117,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
             ) {
                 Column {
                     ChannelSelector(
-                        channels = viewModel.channels,
+                        channels = RecordViewModel.channels,
                         selectedChannel = selectedChannel,
                         onChannelSelected = { viewModel.selectChannel(it) }
                     )
@@ -147,7 +147,7 @@ fun RecordScreen(viewModel: RecordViewModel) {
                 Column {
                     Spacer(modifier = Modifier.height(20.dp))
                     SubCategorySelector(
-                        subCategories = availableSubCategories,
+                        subCategories = availableSubCategories!!,
                         selectedSubCategory = selectedSubCategory,
                         onSubCategorySelected = { viewModel.selectSubCategory(it) }
                     )
