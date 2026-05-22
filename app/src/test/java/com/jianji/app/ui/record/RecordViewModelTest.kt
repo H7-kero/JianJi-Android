@@ -1,14 +1,17 @@
 package com.jianji.app.ui.record
 
-import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.repository.TransactionRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
@@ -19,9 +22,15 @@ class RecordViewModelTest {
 
     @Before
     fun setup() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
         repository = mockk(relaxed = true)
         coEvery { repository.insertTransaction(any()) } returns Unit
         coEvery { repository.updateTransaction(any()) } returns Unit
+    }
+
+    @After
+    fun teardown() {
+        Dispatchers.resetMain()
     }
 
     private fun createViewModel(): RecordViewModel {
@@ -130,7 +139,6 @@ class RecordViewModelTest {
         viewModel.selectCategory("餐饮")
 
         viewModel.saveTransaction()
-        advanceUntilIdle()
 
         coVerify { repository.insertTransaction(match { it.amount == 50.0 && it.category == "餐饮" }) }
     }
@@ -141,7 +149,6 @@ class RecordViewModelTest {
         viewModel.setAmount("50.0")
 
         viewModel.saveTransaction()
-        advanceUntilIdle()
 
         assertThat(viewModel.isSaved.value).isTrue()
     }
@@ -152,7 +159,6 @@ class RecordViewModelTest {
         viewModel.setAmount("abc")
 
         viewModel.saveTransaction()
-        advanceUntilIdle()
 
         coVerify(exactly = 0) { repository.insertTransaction(any()) }
     }
@@ -162,7 +168,6 @@ class RecordViewModelTest {
         viewModel = createViewModel()
 
         viewModel.saveTransaction()
-        advanceUntilIdle()
 
         coVerify(exactly = 0) { repository.insertTransaction(any()) }
     }
@@ -174,7 +179,6 @@ class RecordViewModelTest {
         viewModel.setAmount("5000.0")
 
         viewModel.saveTransaction()
-        advanceUntilIdle()
 
         coVerify { repository.insertTransaction(match { it.type == "income" }) }
     }
@@ -185,7 +189,6 @@ class RecordViewModelTest {
         viewModel.setAmount("50.0")
 
         viewModel.saveTransaction()
-        advanceUntilIdle()
 
         viewModel.resetSavedState()
 
@@ -250,7 +253,6 @@ class RecordViewModelTest {
         viewModel.setAmount("100.0")
 
         viewModel.updateTransaction(5L)
-        advanceUntilIdle()
 
         coVerify {
             repository.updateTransaction(match {
@@ -267,7 +269,6 @@ class RecordViewModelTest {
         viewModel.setAmount("invalid")
 
         viewModel.updateTransaction(5L)
-        advanceUntilIdle()
 
         coVerify(exactly = 0) { repository.updateTransaction(any()) }
     }

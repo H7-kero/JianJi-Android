@@ -1,14 +1,18 @@
 package com.jianji.app.ui.home
 
-import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.repository.TransactionRepository
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
@@ -28,12 +32,18 @@ class HomeViewModelTest {
 
     @Before
     fun setup() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
         repository = mockk(relaxed = true)
         every { repository.getTodayExpense() } returns flowOf(100.0)
         every { repository.getTodayIncome() } returns flowOf(5000.0)
         every { repository.getExpenseByDateRange(any(), any()) } returns flowOf(100.0)
         every { repository.getIncomeByDateRange(any(), any()) } returns flowOf(5000.0)
         every { repository.getTransactionsByDateRange(any(), any()) } returns flowOf(listOf(testTransaction))
+    }
+
+    @After
+    fun teardown() {
+        Dispatchers.resetMain()
     }
 
     private fun createViewModel(): HomeViewModel {
@@ -113,7 +123,6 @@ class HomeViewModelTest {
 
         viewModel.deleteTransaction(testTransaction)
 
-        advanceUntilIdle()
         coVerify { repository.deleteTransaction(testTransaction) }
     }
 
