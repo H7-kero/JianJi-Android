@@ -108,7 +108,7 @@ class RecordViewModelTest {
         viewModel.selectSubCategory("晚餐")
         viewModel.selectCategory("交通")
         viewModel.selectCategory("餐饮")
-        assertThat(viewModel.selectedSubCategory.value).isNotNull()
+        assertThat(viewModel.selectedSubCategory.value).isEqualTo(RecordViewModel.getDefaultSubCategory())
     }
 
     @Test
