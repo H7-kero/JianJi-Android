@@ -223,9 +223,10 @@ fun RecordBottomSheet(
                         onClick = { showCategoryPicker = true }
                     )
 
-                    Box(modifier = Modifier.height(8.dp + 36.dp)) {
-                        AnimatedVisibility(
-                            visible = availableSubCategories != null
+                    Box(modifier = Modifier.height(44.dp)) {
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = availableSubCategories != null,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             SubCategoryChipRow(
                                 subCategories = availableSubCategories ?: emptyList(),
@@ -235,9 +236,10 @@ fun RecordBottomSheet(
                         }
                     }
 
-                    Box(modifier = Modifier.height(8.dp + 36.dp)) {
-                        AnimatedVisibility(
-                            visible = transactionType == "expense"
+                    Box(modifier = Modifier.height(44.dp)) {
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = transactionType == "expense",
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             ChannelChipRow(
                                 channels = RecordViewModel.channels,
