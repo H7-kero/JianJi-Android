@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.minHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -196,7 +196,7 @@ fun EditTransactionSheet(
                     onValueChange = { viewModel.setNote(it) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .minHeight(48.dp),
+                        .heightIn(min = 48.dp),
                     placeholder = { Text("添加备注...", fontSize = 14.sp) },
                     maxLines = 3,
                     shape = RoundedCornerShape(12.dp),
