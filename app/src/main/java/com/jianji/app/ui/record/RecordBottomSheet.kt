@@ -223,22 +223,28 @@ fun RecordBottomSheet(
                         onClick = { showCategoryPicker = true }
                     )
 
-                    if (availableSubCategories != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        SubCategoryChipRow(
-                            subCategories = availableSubCategories,
-                            selectedSubCategory = selectedSubCategory,
-                            onSubCategorySelected = { viewModel.selectSubCategory(it) }
-                        )
+                    Box(modifier = Modifier.height(8.dp + 36.dp)) {
+                        AnimatedVisibility(
+                            visible = availableSubCategories != null
+                        ) {
+                            SubCategoryChipRow(
+                                subCategories = availableSubCategories ?: emptyList(),
+                                selectedSubCategory = selectedSubCategory,
+                                onSubCategorySelected = { viewModel.selectSubCategory(it) }
+                            )
+                        }
                     }
 
-                    if (transactionType == "expense") {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ChannelChipRow(
-                            channels = RecordViewModel.channels,
-                            selectedChannel = selectedChannel,
-                            onChannelSelected = { viewModel.selectChannel(it) }
-                        )
+                    Box(modifier = Modifier.height(8.dp + 36.dp)) {
+                        AnimatedVisibility(
+                            visible = transactionType == "expense"
+                        ) {
+                            ChannelChipRow(
+                                channels = RecordViewModel.channels,
+                                selectedChannel = selectedChannel,
+                                onChannelSelected = { viewModel.selectChannel(it) }
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))

@@ -59,7 +59,7 @@ fun HomeScreen(
             .padding(horizontal = 20.dp)
             .padding(top = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(52.dp))
 
         TodaySummaryCard(
             expense = dayExpense,
@@ -172,7 +172,7 @@ private fun TodaySummaryCard(
                 )
                 Text(
                     text = dateText,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     color = GlassColors.iosBlue,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable { onDateClick() }

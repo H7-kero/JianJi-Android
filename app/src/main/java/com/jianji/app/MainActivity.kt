@@ -345,11 +345,16 @@ fun FloatingGlassNavBar(
             if (rowSize.width > 0) {
                 val indicatorWidth = with(density) { tabPx.toDp() }
                 val indicatorHeight = with(density) { rowSize.height.toDp() }
+                val indicatorShape = when (currentPage) {
+                    0 -> RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp, topEnd = 12.dp, bottomEnd = 12.dp)
+                    2 -> RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp, topEnd = 20.dp, bottomEnd = 20.dp)
+                    else -> RoundedCornerShape(12.dp)
+                }
                 Box(
                     modifier = Modifier
                         .offset { IntOffset(animatedOffset.roundToInt(), 0) }
                         .size(width = indicatorWidth, height = indicatorHeight)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(indicatorShape)
                         .background(Color.Black.copy(alpha = 0.06f))
                 )
             }

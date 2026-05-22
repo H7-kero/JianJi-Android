@@ -205,15 +205,14 @@ private fun CalendarGrid(
     val daysInMonth = yearMonth.lengthOfMonth()
     val blankCells = if (firstDayOfWeek == 7) 0 else firstDayOfWeek
     val totalCells = blankCells + daysInMonth
-    val rows = (totalCells + 6) / 7
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        for (row in 0 until rows) {
+        for (row in 0 until 6) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 for (col in 0..6) {
                     val cellIndex = row * 7 + col
                     if (cellIndex < blankCells || cellIndex >= totalCells) {
-                        Spacer(modifier = Modifier.weight(1f))
+                        Box(modifier = Modifier.weight(1f).aspectRatio(0.85f).padding(2.dp))
                     } else {
                         val dayNum = cellIndex - blankCells + 1
                         val isToday = today.year == yearMonth.year &&
