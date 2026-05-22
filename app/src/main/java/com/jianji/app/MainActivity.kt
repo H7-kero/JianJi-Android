@@ -67,7 +67,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val database = com.jianji.app.data.local.AppDatabase.getDatabase(this)
+        val app = applicationContext as JianJiApplication
+        val database = app.database
         val transactionDao = database.transactionDao()
         val repository = TransactionRepository(transactionDao)
 

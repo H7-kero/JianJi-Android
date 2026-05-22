@@ -10,7 +10,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
 
@@ -111,14 +110,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     // 生命周期运行时 Compose 支持
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
-    
-    // ===== Hilt 依赖注入 =====
-    // Hilt 核心库
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    // Hilt 编译器（KSP 版本）
-    ksp("com.google.dagger:hilt-compiler:2.51.1")
-    // Hilt 导航 Compose 支持
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     
     // ===== Room 数据库 =====
     // Room 运行时

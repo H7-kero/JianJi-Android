@@ -1,7 +1,10 @@
 package com.jianji.app
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import com.jianji.app.data.local.AppDatabase
 
-@HiltAndroidApp
-class JianJiApplication : Application()
+class JianJiApplication : Application() {
+    val database: AppDatabase by lazy {
+        AppDatabase.getDatabase(this)
+    }
+}

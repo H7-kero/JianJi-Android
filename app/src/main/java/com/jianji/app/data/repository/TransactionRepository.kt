@@ -19,16 +19,13 @@ import com.jianji.app.data.model.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * 交易记录仓库类
  * 
  * @param transactionDao 通过依赖注入获取的 DAO 对象
  */
-@Singleton
-class TransactionRepository @Inject constructor(
+class TransactionRepository(
     private val transactionDao: TransactionDao
 ) {
 
