@@ -7,8 +7,6 @@ import com.jianji.app.data.repository.TransactionRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -18,7 +16,6 @@ class RecordViewModelTest {
 
     private lateinit var repository: TransactionRepository
     private lateinit var viewModel: RecordViewModel
-    private val testScope = TestScope(StandardTestDispatcher())
 
     @Before
     fun setup() {
@@ -127,7 +124,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun saveTransaction_withValidAmount_insertsTransaction() = testScope.runTest {
+    fun saveTransaction_withValidAmount_insertsTransaction() = runTest {
         viewModel = createViewModel()
         viewModel.setAmount("50.0")
         viewModel.selectCategory("餐饮")
@@ -139,7 +136,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun saveTransaction_withValidAmount_setsIsSavedTrue() = testScope.runTest {
+    fun saveTransaction_withValidAmount_setsIsSavedTrue() = runTest {
         viewModel = createViewModel()
         viewModel.setAmount("50.0")
 
@@ -150,7 +147,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun saveTransaction_withInvalidAmount_doesNotInsert() = testScope.runTest {
+    fun saveTransaction_withInvalidAmount_doesNotInsert() = runTest {
         viewModel = createViewModel()
         viewModel.setAmount("abc")
 
@@ -161,7 +158,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun saveTransaction_withEmptyAmount_doesNotInsert() = testScope.runTest {
+    fun saveTransaction_withEmptyAmount_doesNotInsert() = runTest {
         viewModel = createViewModel()
 
         viewModel.saveTransaction()
@@ -171,7 +168,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun saveTransaction_preservesTransactionType() = testScope.runTest {
+    fun saveTransaction_preservesTransactionType() = runTest {
         viewModel = createViewModel()
         viewModel.setTransactionType("income")
         viewModel.setAmount("5000.0")
@@ -183,13 +180,12 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun resetSavedState_setsIsSavedFalse() {
+    fun resetSavedState_setsIsSavedFalse() = runTest {
         viewModel = createViewModel()
         viewModel.setAmount("50.0")
-        testScope.runTest {
-            viewModel.saveTransaction()
-            advanceUntilIdle()
-        }
+
+        viewModel.saveTransaction()
+        advanceUntilIdle()
 
         viewModel.resetSavedState()
 
@@ -237,7 +233,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun updateTransaction_preservesOriginalTimestampAndMerchant() = testScope.runTest {
+    fun updateTransaction_preservesOriginalTimestampAndMerchant() = runTest {
         viewModel = createViewModel()
         val originalTimestamp = 1700000000000L
         val originalMerchant = "京东"
@@ -264,7 +260,7 @@ class RecordViewModelTest {
     }
 
     @Test
-    fun updateTransaction_withInvalidAmount_doesNotUpdate() = testScope.runTest {
+    fun updateTransaction_withInvalidAmount_doesNotUpdate() = runTest {
         viewModel = createViewModel()
         val transaction = Transaction(id = 5, amount = 88.0, category = "购物", type = "expense")
         viewModel.loadTransaction(transaction)

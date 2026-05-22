@@ -8,8 +8,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -19,7 +17,6 @@ class HomeViewModelTest {
 
     private lateinit var repository: TransactionRepository
     private lateinit var viewModel: HomeViewModel
-    private val testScope = TestScope(StandardTestDispatcher())
 
     private val testTransaction = Transaction(
         id = 1,
@@ -111,7 +108,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun deleteTransaction_callsRepositoryDelete() = testScope.runTest {
+    fun deleteTransaction_callsRepositoryDelete() = runTest {
         viewModel = createViewModel()
 
         viewModel.deleteTransaction(testTransaction)
