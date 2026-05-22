@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
         val app = applicationContext as JianJiApplication
         val database = app.database
         val transactionDao = database.transactionDao()
-        val repository = TransactionRepository(transactionDao)
+        val repository = TransactionRepository(transactionDao, applicationContext)
 
         setContent {
             MaterialTheme {

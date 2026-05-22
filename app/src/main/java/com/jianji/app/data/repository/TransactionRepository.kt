@@ -14,7 +14,9 @@
  */
 package com.jianji.app.data.repository
 
+import android.content.Context
 import com.jianji.app.data.local.TransactionDao
+import com.jianji.app.data.model.CategoryExpense
 import com.jianji.app.data.model.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,8 +28,18 @@ import java.util.Calendar
  * @param transactionDao 通过依赖注入获取的 DAO 对象
  */
 class TransactionRepository(
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
+    private val context: Context? = null
 ) {
+
+    private val prefs by lazy {
+        context?.getSharedPreferences("jianji_prefs", Context.MODE_PRIVATE)
+    }
+
+    companion object {
+        private const val KEY_MONTHLY_BUDGET = "monthly_budget"
+        private const val DEFAULT_BUDGET = 3000.0
+    }
 
     /**
      * 获取所有交易记录
@@ -144,6 +156,35 @@ class TransactionRepository(
      */
     suspend fun updateTransaction(transaction: Transaction) {
         transactionDao.update(transaction)
+    }
+
+    /**
+     * 获取指定日期范围的分类支出
+     * @param startTime 开始时间戳
+     * @param endTime 结束时间戳
+     * @return 分类支出列表，按金额倒序
+     */
+    fun getCategoryExpenseByDateRange(startTime: Long, endTime: Long): Flow<List<CategoryExpense>> {
+        return transactionDao.getExpenseByCategory(startTime, endTime)
+    }
+
+    /**
+     * 获取月预算
+     * @param yearMonth 年月格式，如 "2026-05"
+     * @return 月预算金额
+     */
+    fun getMonthlyBudget(yearMonth: String): Double {
+        return prefs?.getFloat("${KEY_MONTHLY_BUDGET}_$yearMonth", DEFAULT_BUDGET.toFloat())?.toDouble()
+            ?: DEFAULT_BUDGET
+    }
+
+    /**
+     * 设置月预算
+     * @param yearMonth 年月格式，如 "2026-05"
+     * @param budget 预算金额
+     */
+    fun setMonthlyBudget(yearMonth: String, budget: Double) {
+        prefs?.edit()?.putFloat("${KEY_MONTHLY_BUDGET}_$yearMonth", budget.toFloat())?.apply()
     }
 
     // ===== 私有工具方法 =====

@@ -1,5 +1,8 @@
 package com.jianji.app.ui.home
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jianji.app.data.model.CategoryExpense
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
@@ -33,6 +37,27 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
+private val categoryEmojis = mapOf(
+    "餐饮" to "🍜", "交通" to "🚗", "购物" to "🛍", "娱乐" to "🎮",
+    "医疗" to "🏥", "教育" to "📚", "居住" to "🏠", "其他" to "⋯",
+    "工资" to "💰", "奖金" to "🎁", "投资" to "📈", "兼职" to "💼"
+)
+
+private val categoryColors = mapOf(
+    "餐饮" to Color(0xFFFF3B30).copy(alpha = 0.12f),
+    "交通" to Color(0xFF007AFF).copy(alpha = 0.12f),
+    "购物" to Color(0xFFFF9500).copy(alpha = 0.12f),
+    "娱乐" to Color(0xFFAF52DE).copy(alpha = 0.12f),
+    "医疗" to Color(0xFFFF2D55).copy(alpha = 0.12f),
+    "教育" to Color(0xFF5856D6).copy(alpha = 0.12f),
+    "居住" to Color(0xFF34C759).copy(alpha = 0.12f),
+    "其他" to Color(0xFFE5E5EA).copy(alpha = 0.5f),
+    "工资" to Color(0xFF34C759).copy(alpha = 0.12f),
+    "奖金" to Color(0xFFFFCC00).copy(alpha = 0.12f),
+    "投资" to Color(0xFF007AFF).copy(alpha = 0.12f),
+    "兼职" to Color(0xFF34C759).copy(alpha = 0.12f)
+)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun HomeScreen(
@@ -43,6 +68,9 @@ fun HomeScreen(
     val dayExpense by viewModel.dayExpense.collectAsState()
     val dayIncome by viewModel.dayIncome.collectAsState()
     val transactions by viewModel.transactions.collectAsState()
+    val categoryExpenses by viewModel.categoryExpenses.collectAsState()
+    val monthlyBudget by viewModel.monthlyBudget.collectAsState()
+    val monthlyExpense by viewModel.monthlyExpense.collectAsState()
 
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("M月d日 E", Locale.CHINESE) }
@@ -61,21 +89,61 @@ fun HomeScreen(
     ) {
         Spacer(modifier = Modifier.height(52.dp))
 
-        TodaySummaryCard(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = selectedDate.format(dateFormatter),
+                    fontSize = 14.sp,
+                    color = GlassColors.iosBlue,
+                    modifier = Modifier.clickable { showDatePicker = true }
+                )
+                Text(
+                    text = "今日收支",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(GlassColors.iosBlue.copy(alpha = 0.1f))
+                    .clickable { showDatePicker = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "📅", fontSize = 18.sp)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ExpenseIncomeCard(
             expense = dayExpense,
             income = dayIncome,
-            dateText = selectedDate.format(dateFormatter),
-            isToday = selectedDate == today,
-            onDateClick = { showDatePicker = true },
+            monthlyBudget = monthlyBudget,
+            monthlyExpense = monthlyExpense,
             hazeState = hazeState
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CategoryOverviewCard(
+            categoryExpenses = categoryExpenses,
+            hazeState = hazeState,
+            modifier = Modifier.clickable { }
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = if (selectedDate == today) "今日交易" else "${selectedDate.format(shortDateFormatter)}交易",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onBackground
         )
 
@@ -126,25 +194,32 @@ fun HomeScreen(
 
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
-private fun TodaySummaryCard(
+private fun ExpenseIncomeCard(
     expense: Double,
     income: Double,
-    dateText: String,
-    isToday: Boolean,
-    onDateClick: () -> Unit,
+    monthlyBudget: Double,
+    monthlyExpense: Double,
     hazeState: HazeState
 ) {
+    val progress = if (monthlyBudget > 0) (monthlyExpense / monthlyBudget).coerceIn(0.0, 1.0) else 0.0
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress.toFloat(),
+        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
+        label = "progress"
+    )
+    val progressPercent = (progress * 100).toInt().coerceIn(0, 999)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(
                 elevation = 4.dp,
-                shape = LiquidGlassShapes.card,
+                shape = LiquidGlassShapes.large,
                 clip = false,
                 ambientColor = GlassColors.glassShadow,
                 spotColor = GlassColors.glassShadow
             )
-            .clip(LiquidGlassShapes.card)
+            .clip(LiquidGlassShapes.large)
             .hazeEffect(
                 state = hazeState,
                 style = HazeMaterials.ultraThin(GlassColors.glassCardBackground.copy(alpha = 0.15f))
@@ -152,35 +227,14 @@ private fun TodaySummaryCard(
             .border(
                 width = 0.5.dp,
                 color = Color.White.copy(alpha = 0.5f),
-                shape = LiquidGlassShapes.card
+                shape = LiquidGlassShapes.large
             )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(24.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (isToday) "今日收支" else "收支",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = dateText,
-                    fontSize = 16.sp,
-                    color = GlassColors.iosBlue,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier.clickable { onDateClick() }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -193,36 +247,188 @@ private fun TodaySummaryCard(
                     )
                     Text(
                         text = "¥${formatAmount(expense)}",
-                        fontSize = 28.sp,
+                        fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         color = GlassColors.expenseRed
                     )
                 }
 
-                if (income > 0) {
-                    Spacer(modifier = Modifier.width(24.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .height(40.dp)
-                            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(48.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "收入",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.width(24.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "¥${formatAmount(income)}",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GlassColors.incomeGreen
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color.Black.copy(alpha = 0.04f))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(animatedProgress.toFloat())
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    GlassColors.expenseRed,
+                                    Color(0xFFFF6B6B)
+                                )
+                            )
+                        )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = "月预算 ¥${formatAmount(monthlyBudget)} · 已用 $progressPercent%",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+private fun CategoryOverviewCard(
+    categoryExpenses: List<CategoryExpense>,
+    hazeState: HazeState,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 2.dp,
+                shape = LiquidGlassShapes.medium,
+                clip = false,
+                ambientColor = GlassColors.glassShadow,
+                spotColor = GlassColors.glassShadow
+            )
+            .clip(LiquidGlassShapes.medium)
+            .hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.ultraThin(GlassColors.glassCardBackground.copy(alpha = 0.15f))
+            )
+            .border(
+                width = 0.5.dp,
+                color = Color.White.copy(alpha = 0.5f),
+                shape = LiquidGlassShapes.medium
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "分类概览",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categoryExpenses.take(3).forEach { categoryExpense ->
+                    CategoryChip(
+                        category = categoryExpense.category,
+                        amount = categoryExpense.total,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.Black.copy(alpha = 0.04f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.padding(vertical = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "⋯", fontSize = 20.sp)
                         Text(
-                            text = "收入",
-                            fontSize = 12.sp,
+                            text = "全部",
+                            fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "¥${formatAmount(income)}",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = GlassColors.incomeGreen
+                            text = "→",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = GlassColors.iosBlue
                         )
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun CategoryChip(
+    category: String,
+    amount: Double,
+    modifier: Modifier = Modifier
+) {
+    val bgColor = categoryColors[category] ?: Color.Black.copy(alpha = 0.04f)
+    val emoji = categoryEmojis[category] ?: "⋯"
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(bgColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = emoji, fontSize = 20.sp)
+            Text(
+                text = category,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "¥${formatAmount(amount)}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }

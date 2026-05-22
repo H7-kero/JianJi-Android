@@ -2,11 +2,14 @@ package com.jianji.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jianji.app.data.model.CategoryExpense
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 class HomeViewModel(
@@ -36,6 +39,24 @@ class HomeViewModel(
         val (start, end) = getDateRange(date)
         repository.getTransactionsByDateRange(start, end)
     }.stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
+
+    val categoryExpenses: StateFlow<List<CategoryExpense>> = _selectedDate.flatMapLatest { date ->
+        val (start, end) = getDateRange(date)
+        repository.getCategoryExpenseByDateRange(start, end)
+    }.stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = emptyList())
+
+    private val currentYearMonth: String
+        get() = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+
+    val monthlyExpense: StateFlow<Double> = flow {
+        val yearMonth = YearMonth.now()
+        val startOfMonth = yearMonth.atDay(1).atStartOfDay().toInstant(java.time.ZoneOffset.systemDefault().rules.getOffset(java.time.Instant.now())).toEpochMilli()
+        val endOfMonth = yearMonth.plusMonths(1).atDay(1).atStartOfDay().toInstant(java.time.ZoneOffset.systemDefault().rules.getOffset(java.time.Instant.now())).toEpochMilli()
+        repository.getExpenseByDateRange(startOfMonth, endOfMonth).collect { emit(it) }
+    }.stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(5000), initialValue = 0.0)
+
+    private val _monthlyBudget = MutableStateFlow(repository.getMonthlyBudget(currentYearMonth))
+    val monthlyBudget: StateFlow<Double> = _monthlyBudget.asStateFlow()
 
     private val _editingTransaction = MutableStateFlow<Transaction?>(null)
     val editingTransaction: StateFlow<Transaction?> = _editingTransaction.asStateFlow()
