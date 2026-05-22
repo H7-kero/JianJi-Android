@@ -35,7 +35,7 @@ import com.jianji.app.data.model.Budget
         Category::class,       // 分类表
         Budget::class          // 预算表
     ],
-    version = 1,             // 数据库版本，修改表结构时需要+1
+    version = 2,             // 数据库版本，修改表结构时需要+1
     exportSchema = false     // 不导出 schema 文件（简化开发）
 )
 abstract class AppDatabase : RoomDatabase() {

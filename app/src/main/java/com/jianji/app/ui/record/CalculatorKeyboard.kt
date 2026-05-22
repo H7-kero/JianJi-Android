@@ -189,7 +189,8 @@ fun evaluateExpression(expression: String): Double {
     if (cleaned.isEmpty()) return 0.0
 
     return try {
-        evaluateArithmetic(cleaned)
+        val result = evaluateArithmetic(cleaned)
+        if (result.isNaN() || result.isInfinite()) 0.0 else result
     } catch (_: Exception) {
         cleaned.toDoubleOrNull() ?: 0.0
     }

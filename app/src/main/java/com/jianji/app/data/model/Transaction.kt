@@ -10,6 +10,7 @@
 package com.jianji.app.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -25,7 +26,14 @@ import androidx.room.PrimaryKey
  * - timestamp: 时间戳（毫秒）
  * - source: 来源（manual=手动，auto=自动记账）
  */
-@Entity(tableName = "transactions")
+@Entity(
+    tableName = "transactions",
+    indices = [
+        Index(value = ["timestamp"]),
+        Index(value = ["type", "timestamp"]),
+        Index(value = ["category"])
+    ]
+)
 data class Transaction(
     // 主键，自动递增
     @PrimaryKey(autoGenerate = true)

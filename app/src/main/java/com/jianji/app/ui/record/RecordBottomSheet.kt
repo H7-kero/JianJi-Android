@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
 import com.jianji.app.ui.theme.iosSpring
+import com.jianji.app.util.formatAmount
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -481,13 +482,5 @@ private fun SelectableChip(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = textColor
         )
-    }
-}
-
-internal fun formatAmount(value: Double): String {
-    return if (value == value.toLong().toDouble()) {
-        value.toLong().toString()
-    } else {
-        String.format("%.2f", value)
     }
 }

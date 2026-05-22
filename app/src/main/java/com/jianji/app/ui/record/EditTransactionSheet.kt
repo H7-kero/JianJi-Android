@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
+import com.jianji.app.util.formatAmount
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -49,7 +50,7 @@ fun EditTransactionSheet(
         RecordViewModel.subCategories[it]
     }
 
-    var expression by remember { mutableStateOf(formatEditAmount(transaction.amount)) }
+    var expression by remember { mutableStateOf(formatAmount(transaction.amount)) }
     val evaluatedValue = remember(expression) { evaluateExpression(expression) }
 
     var showCategoryPicker by remember { mutableStateOf(false) }
@@ -233,13 +234,5 @@ fun EditTransactionSheet(
             },
             onDismiss = { showCategoryPicker = false }
         )
-    }
-}
-
-private fun formatEditAmount(amount: Double): String {
-    return if (amount == amount.toLong().toDouble()) {
-        amount.toLong().toString()
-    } else {
-        String.format("%.2f", amount)
     }
 }

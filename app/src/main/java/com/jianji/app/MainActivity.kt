@@ -51,6 +51,7 @@ import com.jianji.app.ui.record.RecordViewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import java.time.LocalDate
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
 import com.jianji.app.ui.theme.BlurRadius
@@ -86,9 +87,9 @@ fun JianJiApp(repository: TransactionRepository) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val homeViewModel = remember { HomeViewModel(repository) }
-    val reportViewModel = remember { ReportViewModel(repository) }
-    val recordViewModel = remember { RecordViewModel(repository) }
+    val homeViewModel: HomeViewModel = viewModel { HomeViewModel(repository) }
+    val reportViewModel: ReportViewModel = viewModel { ReportViewModel(repository) }
+    val recordViewModel: RecordViewModel = viewModel { RecordViewModel(repository) }
 
     val hazeState = remember { HazeState() }
     var showEditSheet by remember { mutableStateOf(false) }

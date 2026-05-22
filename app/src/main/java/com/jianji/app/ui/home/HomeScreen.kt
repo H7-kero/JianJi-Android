@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
+import com.jianji.app.util.formatAmount
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -45,6 +46,8 @@ fun HomeScreen(
 
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("M月d日 E", Locale.CHINESE) }
+    val shortDateFormatter = remember { DateTimeFormatter.ofPattern("M月d日", Locale.CHINESE) }
+    val today = remember { LocalDate.now() }
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -62,7 +65,7 @@ fun HomeScreen(
             expense = dayExpense,
             income = dayIncome,
             dateText = selectedDate.format(dateFormatter),
-            isToday = selectedDate == LocalDate.now(),
+            isToday = selectedDate == today,
             onDateClick = { showDatePicker = true },
             hazeState = hazeState
         )
@@ -70,7 +73,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = if (selectedDate == LocalDate.now()) "今日交易" else "${selectedDate.format(DateTimeFormatter.ofPattern("M月d日", Locale.CHINESE))}交易",
+            text = if (selectedDate == today) "今日交易" else "${selectedDate.format(shortDateFormatter)}交易",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -189,7 +192,7 @@ private fun TodaySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "¥${formatHomeAmount(expense)}",
+                        text = "¥${formatAmount(expense)}",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = GlassColors.expenseRed
@@ -212,7 +215,7 @@ private fun TodaySummaryCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "¥${formatHomeAmount(income)}",
+                            text = "¥${formatAmount(income)}",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = GlassColors.incomeGreen
@@ -301,9 +304,9 @@ private fun TransactionItem(
             }
 
             val amountText = if (transaction.type == "expense") {
-                "-¥${formatHomeAmount(transaction.amount)}"
+                "-¥${formatAmount(transaction.amount)}"
             } else {
-                "+¥${formatHomeAmount(transaction.amount)}"
+                "+¥${formatAmount(transaction.amount)}"
             }
 
             Text(
@@ -317,13 +320,5 @@ private fun TransactionItem(
                 }
             )
         }
-    }
-}
-
-private fun formatHomeAmount(amount: Double): String {
-    return if (amount == amount.toLong().toDouble()) {
-        amount.toLong().toString()
-    } else {
-        String.format("%.2f", amount)
     }
 }
