@@ -137,7 +137,7 @@ fun DatePickerBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val weekDays = DayOfWeek.values().map {
+            val weekDays = DayOfWeek.entries.map {
                 it.getDisplayName(TextStyle.NARROW, Locale.CHINESE)
             }
             Row(modifier = Modifier.fillMaxWidth()) {

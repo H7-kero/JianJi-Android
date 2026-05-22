@@ -24,30 +24,24 @@ class RecordViewModel(
     private val repository: TransactionRepository
 ) : ViewModel() {
 
-    // 交易类型：支出或收入
     private val _transactionType = MutableStateFlow("expense")
     val transactionType: StateFlow<String> = _transactionType.asStateFlow()
 
-    // 金额
     private val _amount = MutableStateFlow("")
     val amount: StateFlow<String> = _amount.asStateFlow()
 
-    // 选中的分类
     private val _selectedCategory = MutableStateFlow<String?>("餐饮")
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
 
     private val _selectedSubCategory = MutableStateFlow<String?>(getDefaultSubCategory())
     val selectedSubCategory: StateFlow<String?> = _selectedSubCategory.asStateFlow()
 
-    // 选中的支付渠道
     private val _selectedChannel = MutableStateFlow("微信")
     val selectedChannel: StateFlow<String> = _selectedChannel.asStateFlow()
 
-    // 备注
     private val _note = MutableStateFlow("")
     val note: StateFlow<String> = _note.asStateFlow()
 
-    // 保存状态
     private val _isSaved = MutableStateFlow(false)
     val isSaved: StateFlow<Boolean> = _isSaved.asStateFlow()
 
@@ -91,16 +85,10 @@ class RecordViewModel(
         }
     }
 
-    /**
-     * 获取某个分类的子分类列表
-     */
     fun getSubCategoriesForCategory(category: String): List<String> {
         return subCategories[category] ?: emptyList()
     }
 
-    /**
-     * 更新交易类型
-     */
     fun setTransactionType(type: String) {
         _transactionType.value = type
         _selectedCategory.value = "餐饮"
@@ -108,16 +96,10 @@ class RecordViewModel(
         _selectedChannel.value = "微信"
     }
 
-    /**
-     * 更新金额
-     */
     fun setAmount(amount: String) {
         _amount.value = amount
     }
 
-    /**
-     * 选择分类（必选子分类）
-     */
     fun selectCategory(category: String) {
         _selectedCategory.value = category
         if (category == "餐饮") {
@@ -125,30 +107,18 @@ class RecordViewModel(
         }
     }
 
-    /**
-     * 选择子分类
-     */
     fun selectSubCategory(subCategory: String?) {
         _selectedSubCategory.value = subCategory
     }
 
-    /**
-     * 选择支付渠道
-     */
     fun selectChannel(channel: String) {
         _selectedChannel.value = channel
     }
 
-    /**
-     * 更新备注
-     */
     fun setNote(note: String) {
         _note.value = note
     }
 
-    /**
-     * 保存交易记录
-     */
     fun saveTransaction() {
         viewModelScope.launch {
             val amountValue = _amount.value.toDoubleOrNull() ?: return@launch
@@ -168,16 +138,10 @@ class RecordViewModel(
         }
     }
 
-    /**
-     * 重置保存状态
-     */
     fun resetSavedState() {
         _isSaved.value = false
     }
 
-    /**
-     * 重置表单
-     */
     fun resetForm() {
         _amount.value = ""
         _selectedCategory.value = "餐饮"
@@ -189,8 +153,13 @@ class RecordViewModel(
     private val _editingTransactionId = MutableStateFlow<Long?>(null)
     val editingTransactionId: StateFlow<Long?> = _editingTransactionId.asStateFlow()
 
+    private val _originalTimestamp = MutableStateFlow(0L)
+    private val _originalMerchant = MutableStateFlow<String?>(null)
+
     fun loadTransaction(transaction: Transaction) {
         _editingTransactionId.value = transaction.id
+        _originalTimestamp.value = transaction.timestamp
+        _originalMerchant.value = transaction.merchant
         _transactionType.value = transaction.type
         _selectedCategory.value = transaction.category
         _selectedSubCategory.value = transaction.subCategory
@@ -211,6 +180,8 @@ class RecordViewModel(
                 channel = _selectedChannel.value,
                 type = _transactionType.value,
                 note = _note.value,
+                merchant = _originalMerchant.value,
+                timestamp = _originalTimestamp.value,
                 source = "manual"
             )
 
