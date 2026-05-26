@@ -1,0 +1,67 @@
+name: Emulator Screenshots
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  emulator-screenshots:
+    runs-on: macos-13
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Run emulator and take screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86
+          profile: pixel_6
+          heap-size: 512M
+          ram-size: 4096M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            echo "Installing APK..."
+            adb install app/build/outputs/apk/debug/app-debug.apk
+
+            echo "Launching app..."
+            adb shell am start -n com.jianji.app/.MainActivity
+
+            echo "Waiting for app to launch..."
+            sleep 10
+
+            echo "Taking screenshot - Home screen..."
+            adb shell screencap -p /sdcard/screenshot_home.png
+            adb pull /sdcard/screenshot_home.png screenshots/screenshot_home.png
+
+            echo "Taking screenshot - Home screen (2s later)..."
+            sleep 2
+            adb shell screencap -p /sdcard/screenshot_home_2.png
+            adb pull /sdcard/screenshot_home_2.png screenshots/screenshot_home_2.png
+
+            echo "All screenshots taken!"
+
+      - name: Upload Screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: emulator-screenshots
+          path: screenshots/
