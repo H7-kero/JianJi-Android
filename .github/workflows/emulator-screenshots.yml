@@ -7,7 +7,7 @@ on:
 
 jobs:
   emulator-screenshots:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
@@ -33,20 +33,24 @@ jobs:
         with:
           api-level: 30
           arch: x86
-          profile: pixel_6
+          cores: 2
           heap-size: 512M
           ram-size: 4096M
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          force-avd-creation: false
+          disable-linux-hw-accel: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
+            mkdir -p screenshots
+
             echo "Installing APK..."
-            adb install app/build/outputs/apk/debug/app-debug.apk
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
 
             echo "Launching app..."
             adb shell am start -n com.jianji.app/.MainActivity
 
             echo "Waiting for app to launch..."
-            sleep 10
+            sleep 15
 
             echo "Taking screenshot - Home screen..."
             adb shell screencap -p /sdcard/screenshot_home.png
