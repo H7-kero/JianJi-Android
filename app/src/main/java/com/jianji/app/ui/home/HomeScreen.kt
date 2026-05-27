@@ -6,6 +6,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,17 +17,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.data.model.CategoryExpense
 import com.jianji.app.data.model.Transaction
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
+import com.jianji.app.ui.theme.glassPressSpring
 import com.jianji.app.util.formatAmount
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
@@ -171,6 +174,7 @@ fun HomeScreen(
                     TransactionItem(
                         transaction = transaction,
                         timeFormat = timeFormat,
+                        hazeState = hazeState,
                         onClick = { viewModel.startEditing(transaction) }
                     )
                 }
@@ -433,15 +437,26 @@ private fun CategoryChip(
     }
 }
 
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 private fun TransactionItem(
     transaction: Transaction,
     timeFormat: SimpleDateFormat,
+    hazeState: HazeState,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = glassPressSpring,
+        label = "tx_press"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .scale(pressScale)
             .shadow(
                 elevation = 2.dp,
                 shape = LiquidGlassShapes.medium,
@@ -450,20 +465,27 @@ private fun TransactionItem(
                 spotColor = GlassColors.glassShadow
             )
             .clip(LiquidGlassShapes.medium)
+            .hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.ultraThin(GlassColors.glassCardBackground.copy(alpha = 0.15f))
+            )
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        GlassColors.glassHighlight,
-                        GlassColors.glassCardBackground
+                        Color.White.copy(alpha = 0.12f),
+                        Color.Transparent
                     )
                 )
             )
             .border(
                 width = 0.5.dp,
-                color = Color.Black.copy(alpha = 0.06f),
+                color = Color.White.copy(alpha = 0.5f),
                 shape = LiquidGlassShapes.medium
             )
-            .clickable { onClick() }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }
     ) {
         Row(
             modifier = Modifier

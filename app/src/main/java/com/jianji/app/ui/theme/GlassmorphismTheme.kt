@@ -1,6 +1,7 @@
 package com.jianji.app.ui.theme
 
 import android.graphics.RenderEffect
+import android.graphics.RuntimeShader
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
@@ -48,6 +50,62 @@ object LiquidGlassShapes {
     val circle = CircleShape
 }
 
+@Composable
+internal fun rememberGlassShader(shape: Shape): Pair<RuntimeShader?, Float> {
+    val shader = remember { LiquidGlassShader.createShader() }
+    val cornerRadius = remember(shape) {
+        when (shape) {
+            LiquidGlassShapes.card -> 20f
+            LiquidGlassShapes.large -> 28f
+            LiquidGlassShapes.medium -> 16f
+            LiquidGlassShapes.small -> 12f
+            else -> 20f
+        }
+    }
+    return shader to cornerRadius
+}
+
+@OptIn(ExperimentalHazeMaterialsApi::class)
+internal fun Modifier.glassModifier(
+    hazeState: HazeState,
+    hazeStyle: HazeStyle,
+    shape: Shape,
+    elevation: Dp,
+    borderAlpha: Float,
+    shader: RuntimeShader? = null,
+    cornerRadius: Float = 20f,
+    refraction: Float = 0.3f,
+    dispersion: Float = 0.3f,
+    highlightIntensity: Float = 0.8f
+): Modifier {
+    return this
+        .shadow(
+            elevation = elevation, shape = shape, clip = false,
+            ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow
+        )
+        .clip(shape)
+        .hazeEffect(state = hazeState, style = hazeStyle)
+        .then(
+            if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Modifier.graphicsLayer {
+                    LiquidGlassShader.applyShaderParams(
+                        shader, size.width, size.height,
+                        refraction = refraction,
+                        dispersion = dispersion,
+                        highlightIntensity = highlightIntensity,
+                        cornerRadius = cornerRadius
+                    )
+                    renderEffect = RenderEffect
+                        .createRuntimeShaderEffect(shader, "composable")
+                        .asComposeRenderEffect()
+                }
+            } else {
+                Modifier
+            }
+        )
+        .border(width = 0.5.dp, color = Color.White.copy(alpha = borderAlpha), shape = shape)
+}
+
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun GlassCard(
@@ -57,56 +115,29 @@ fun GlassCard(
     containerColor: Color = GlassColors.glassCardBackground,
     contentColor: Color = Color.Unspecified,
     elevation: Dp = 2.dp,
-    borderAlpha: Float = 0.06f,
-    cardBody: @Composable ColumnScope.() -> Unit
+    borderAlpha: Float = 0.5f,
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    val shader = remember { LiquidGlassShader.createShader() }
-    val cornerRadiusPx = remember(shape) {
-        when (shape) {
-            LiquidGlassShapes.card -> 20f
-            LiquidGlassShapes.large -> 28f
-            LiquidGlassShapes.medium -> 16f
-            LiquidGlassShapes.small -> 12f
-            else -> 20f
-        }
-    }
+    val (shader, cornerRadius) = rememberGlassShader(shape)
+    val hazeStyle = HazeMaterials.ultraThin(containerColor.copy(alpha = 0.15f))
 
     ElevatedCard(
-        modifier = modifier
-            .shadow(
-                elevation = elevation, shape = shape, clip = false,
-                ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow
-            )
-            .hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.ultraThin(containerColor.copy(alpha = 0.15f))
-            )
-            .then(
-                if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Modifier.graphicsLayer {
-                        LiquidGlassShader.applyShaderParams(
-                            shader, size.width, size.height,
-                            cornerRadius = cornerRadiusPx
-                        )
-                        renderEffect = RenderEffect
-                            .createRuntimeShaderEffect(shader, "composable")
-                            .asComposeRenderEffect()
-                    }
-                } else {
-                    Modifier
-                }
-            )
-            .border(width = 0.5.dp, color = Color.White.copy(alpha = 0.5f), shape = shape),
+        modifier = modifier.glassModifier(
+            hazeState = hazeState,
+            hazeStyle = hazeStyle,
+            shape = shape,
+            elevation = elevation,
+            borderAlpha = borderAlpha,
+            shader = shader,
+            cornerRadius = cornerRadius
+        ),
         shape = shape,
         colors = CardDefaults.elevatedCardColors(
             containerColor = Color.Transparent,
             contentColor = if (contentColor == Color.Unspecified) contentColorFor(containerColor) else contentColor
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp),
-        content = {
-            val scope = this
-            scope.cardBody()
-        }
+        content = content
     )
 }
 
@@ -118,47 +149,22 @@ fun GlassSurface(
     shape: Shape = LiquidGlassShapes.card,
     containerColor: Color = GlassColors.glassCardBackground,
     elevation: Dp = 2.dp,
-    borderAlpha: Float = 0.06f,
+    borderAlpha: Float = 0.5f,
     content: @Composable () -> Unit
 ) {
-    val shader = remember { LiquidGlassShader.createShader() }
-    val cornerRadiusPx = remember(shape) {
-        when (shape) {
-            LiquidGlassShapes.card -> 20f
-            LiquidGlassShapes.large -> 28f
-            LiquidGlassShapes.medium -> 16f
-            LiquidGlassShapes.small -> 12f
-            else -> 20f
-        }
-    }
+    val (shader, cornerRadius) = rememberGlassShader(shape)
+    val hazeStyle = HazeMaterials.ultraThin(containerColor.copy(alpha = 0.15f))
 
     Box(
-        modifier = modifier
-            .shadow(
-                elevation = elevation, shape = shape, clip = false,
-                ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow
-            )
-            .clip(shape)
-            .hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.ultraThin(containerColor.copy(alpha = 0.15f))
-            )
-            .then(
-                if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Modifier.graphicsLayer {
-                        LiquidGlassShader.applyShaderParams(
-                            shader, size.width, size.height,
-                            cornerRadius = cornerRadiusPx
-                        )
-                        renderEffect = RenderEffect
-                            .createRuntimeShaderEffect(shader, "composable")
-                            .asComposeRenderEffect()
-                    }
-                } else {
-                    Modifier.background(containerColor)
-                }
-            )
-            .border(width = 0.5.dp, color = Color.White.copy(alpha = 0.5f), shape = shape)
+        modifier = modifier.glassModifier(
+            hazeState = hazeState,
+            hazeStyle = hazeStyle,
+            shape = shape,
+            elevation = elevation,
+            borderAlpha = borderAlpha,
+            shader = shader,
+            cornerRadius = cornerRadius
+        )
     ) {
         content()
     }
@@ -172,50 +178,25 @@ fun GlassContainer(
     shape: Shape = LiquidGlassShapes.medium,
     containerColor: Color = GlassColors.glassSurface,
     elevation: Dp = 1.dp,
-    borderAlpha: Float = 0.05f,
+    borderAlpha: Float = 0.4f,
     content: @Composable () -> Unit
 ) {
-    val shader = remember { LiquidGlassShader.createShader() }
-    val cornerRadiusPx = remember(shape) {
-        when (shape) {
-            LiquidGlassShapes.card -> 20f
-            LiquidGlassShapes.large -> 28f
-            LiquidGlassShapes.medium -> 16f
-            LiquidGlassShapes.small -> 12f
-            else -> 16f
-        }
-    }
+    val (shader, cornerRadius) = rememberGlassShader(shape)
+    val hazeStyle = HazeMaterials.thin(containerColor.copy(alpha = 0.1f))
 
     Box(
-        modifier = modifier
-            .shadow(
-                elevation = elevation, shape = shape, clip = false,
-                ambientColor = GlassColors.glassShadow, spotColor = GlassColors.glassShadow
-            )
-            .clip(shape)
-            .hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.thin(containerColor.copy(alpha = 0.1f))
-            )
-            .then(
-                if (shader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Modifier.graphicsLayer {
-                        LiquidGlassShader.applyShaderParams(
-                            shader, size.width, size.height,
-                            refraction = 0.15f,
-                            dispersion = 0.15f,
-                            highlightIntensity = 0.5f,
-                            cornerRadius = cornerRadiusPx
-                        )
-                        renderEffect = RenderEffect
-                            .createRuntimeShaderEffect(shader, "composable")
-                            .asComposeRenderEffect()
-                    }
-                } else {
-                    Modifier.background(containerColor)
-                }
-            )
-            .border(width = 0.5.dp, color = Color.White.copy(alpha = 0.4f), shape = shape)
+        modifier = modifier.glassModifier(
+            hazeState = hazeState,
+            hazeStyle = hazeStyle,
+            shape = shape,
+            elevation = elevation,
+            borderAlpha = borderAlpha,
+            shader = shader,
+            cornerRadius = cornerRadius,
+            refraction = 0.15f,
+            dispersion = 0.15f,
+            highlightIntensity = 0.5f
+        )
     ) {
         content()
     }

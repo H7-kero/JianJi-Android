@@ -5,9 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -50,10 +47,12 @@ import com.jianji.app.ui.record.RecordBottomSheet
 import com.jianji.app.ui.record.RecordViewModel
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
-import java.time.LocalDate
-import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import dev.chrisbanes.haze.materials.HazeMaterials
 import com.jianji.app.ui.report.ReportScreen
 import com.jianji.app.ui.report.ReportViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jianji.app.ui.theme.BlurRadius
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
@@ -81,7 +80,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 fun JianJiApp(repository: TransactionRepository) {
     val context = LocalContext.current
@@ -121,8 +120,8 @@ fun JianJiApp(repository: TransactionRepository) {
         ) { page ->
             when (page) {
                 0 -> HomeScreen(homeViewModel, hazeState)
-                1 -> ReportScreen(reportViewModel)
-                2 -> ProfileScreen()
+                1 -> ReportScreen(reportViewModel, hazeState)
+                2 -> ProfileScreen(hazeState)
             }
         }
 
@@ -133,6 +132,7 @@ fun JianJiApp(repository: TransactionRepository) {
                     pagerState.animateScrollToPage(page)
                 }
             },
+            hazeState = hazeState,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
@@ -142,9 +142,9 @@ fun JianJiApp(repository: TransactionRepository) {
         AnimatedVisibility(
             visible = fabVisible,
             enter = scaleIn(animationSpec = iosSpring) +
-                    fadeIn(animationSpec = tween(200)),
+                    fadeIn(animationSpec = androidx.compose.animation.core.tween(200)),
             exit = scaleOut(animationSpec = iosSnappy) +
-                    fadeOut(animationSpec = tween(150)),
+                    fadeOut(animationSpec = androidx.compose.animation.core.tween(150)),
             modifier = Modifier
                 .align(if (fabPosition == "left") Alignment.BottomStart else Alignment.BottomEnd)
                 .padding(
@@ -153,7 +153,7 @@ fun JianJiApp(repository: TransactionRepository) {
                     bottom = (navBarHeight + 94).dp
                 )
         ) {
-            FAB(onClick = { showRecordSheet = true })
+            FAB(onClick = { showRecordSheet = true }, hazeState = hazeState)
         }
     }
 
@@ -192,8 +192,9 @@ fun JianJiApp(repository: TransactionRepository) {
     }
 }
 
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
-private fun FAB(onClick: () -> Unit) {
+private fun FAB(onClick: () -> Unit, hazeState: HazeState) {
     Box(
         modifier = Modifier
             .size(56.dp)
@@ -205,17 +206,21 @@ private fun FAB(onClick: () -> Unit) {
                 spotColor = GlassColors.glassShadow
             )
             .clip(LiquidGlassShapes.circle)
+            .hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.ultraThin(GlassColors.glassNavBackground.copy(alpha = 0.2f))
+            )
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        GlassColors.glassHighlight,
-                        GlassColors.glassNavBackground
+                        Color.White.copy(alpha = 0.2f),
+                        Color.Transparent
                     )
                 )
             )
             .border(
                 width = 0.5.dp,
-                color = Color.Black.copy(alpha = 0.06f),
+                color = Color.White.copy(alpha = 0.5f),
                 shape = LiquidGlassShapes.circle
             )
             .clickable(
@@ -233,10 +238,12 @@ private fun FAB(onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun FloatingGlassNavBar(
     currentPage: Int,
     onPageSelected: (Int) -> Unit,
+    hazeState: HazeState,
     modifier: Modifier = Modifier
 ) {
     val items = listOf(
@@ -257,17 +264,22 @@ fun FloatingGlassNavBar(
                 spotColor = GlassColors.glassShadow
             )
             .clip(LiquidGlassShapes.large)
+            .hazeEffect(
+                state = hazeState,
+                style = HazeMaterials.regular(GlassColors.glassNavBackground.copy(alpha = 0.2f))
+            )
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        GlassColors.glassHighlight,
-                        GlassColors.glassNavBackground
+                        Color.White.copy(alpha = 0.15f),
+                        Color.Transparent,
+                        Color.Black.copy(alpha = 0.03f)
                     )
                 )
             )
             .border(
                 width = 0.5.dp,
-                color = Color.Black.copy(alpha = 0.06f),
+                color = Color.White.copy(alpha = 0.5f),
                 shape = LiquidGlassShapes.large
             )
     ) {

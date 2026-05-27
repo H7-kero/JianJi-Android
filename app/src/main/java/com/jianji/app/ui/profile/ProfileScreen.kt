@@ -7,7 +7,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,8 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -32,9 +29,11 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.jianji.app.ui.theme.GlassCard
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
 import com.jianji.app.ui.theme.iosSpring
+import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -91,7 +90,7 @@ fun openAccessibilitySettings(context: Context) {
 }
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(hazeState: HazeState) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
@@ -117,30 +116,10 @@ fun ProfileScreen() {
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 4.dp,
-                    shape = LiquidGlassShapes.card,
-                    clip = false,
-                    ambientColor = GlassColors.glassShadow,
-                    spotColor = GlassColors.glassShadow
-                )
-                .clip(LiquidGlassShapes.card)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            GlassColors.glassHighlight,
-                            GlassColors.glassCardBackground
-                        )
-                    )
-                )
-                .border(
-                    width = 0.5.dp,
-                    color = Color.Black.copy(alpha = 0.06f),
-                    shape = LiquidGlassShapes.card
-                )
+        GlassCard(
+            hazeState = hazeState,
+            shape = LiquidGlassShapes.card,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(4.dp)) {
                 AutoAccountingItem(
@@ -174,30 +153,10 @@ fun ProfileScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 4.dp,
-                    shape = LiquidGlassShapes.card,
-                    clip = false,
-                    ambientColor = GlassColors.glassShadow,
-                    spotColor = GlassColors.glassShadow
-                )
-                .clip(LiquidGlassShapes.card)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            GlassColors.glassHighlight,
-                            GlassColors.glassCardBackground
-                        )
-                    )
-                )
-                .border(
-                    width = 0.5.dp,
-                    color = Color.Black.copy(alpha = 0.06f),
-                    shape = LiquidGlassShapes.card
-                )
+        GlassCard(
+            hazeState = hazeState,
+            shape = LiquidGlassShapes.card,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(4.dp)) {
                 Row(
@@ -273,30 +232,10 @@ fun ProfileScreen() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 4.dp,
-                    shape = LiquidGlassShapes.card,
-                    clip = false,
-                    ambientColor = GlassColors.glassShadow,
-                    spotColor = GlassColors.glassShadow
-                )
-                .clip(LiquidGlassShapes.card)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            GlassColors.glassHighlight,
-                            GlassColors.glassCardBackground
-                        )
-                    )
-                )
-                .border(
-                    width = 0.5.dp,
-                    color = Color.Black.copy(alpha = 0.06f),
-                    shape = LiquidGlassShapes.card
-                )
+        GlassCard(
+            hazeState = hazeState,
+            shape = LiquidGlassShapes.card,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),

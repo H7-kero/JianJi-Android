@@ -2,12 +2,13 @@ package com.jianji.app.ui.record
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,7 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
+import com.jianji.app.ui.theme.glassPressSpring
 import com.jianji.app.ui.theme.iosSpring
 import com.jianji.app.util.formatAmount
 
@@ -347,13 +349,30 @@ private fun TypeChip(
         label = "type_text"
     )
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = glassPressSpring,
+        label = "type_scale"
+    )
+
     Box(
         modifier = modifier
             .height(42.dp)
+            .scale(scale)
             .clip(LiquidGlassShapes.small)
             .background(bgColor)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.10f),
+                        Color.Transparent
+                    )
+                )
+            )
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null
             ) { onClick() },
         contentAlignment = Alignment.Center
@@ -372,12 +391,32 @@ internal fun CategorySelectorRow(
     selectedCategory: String?,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = glassPressSpring,
+        label = "cat_selector_scale"
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .scale(scale)
             .clip(LiquidGlassShapes.small)
             .background(GlassColors.glassCardBackground)
-            .clickable { onClick() }
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.10f),
+                        Color.Transparent
+                    )
+                )
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -473,12 +512,29 @@ private fun SelectableChip(
         label = "chip_text"
     )
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = glassPressSpring,
+        label = "chip_scale"
+    )
+
     Box(
         modifier = Modifier
+            .scale(scale)
             .clip(RoundedCornerShape(50))
             .background(bgColor)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.10f),
+                        Color.Transparent
+                    )
+                )
+            )
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null
             ) { onClick() }
             .padding(horizontal = 14.dp, vertical = 8.dp),

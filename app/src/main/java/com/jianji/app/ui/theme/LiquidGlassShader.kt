@@ -15,6 +15,7 @@ object LiquidGlassShader {
         uniform float highlightIntensity;
         uniform float2 lensCenter;
         uniform float cornerRadius;
+        uniform float specularIntensity;
 
         float sdfRoundedBox(float2 p, float2 b, float r) {
             float2 q = abs(p) - b + r;
@@ -46,18 +47,37 @@ object LiquidGlassShader {
             float sdf = sdfRoundedBox(p, boxHalf, cornerRadius);
             float normalizedSdf = sdf / max(resolution.x, resolution.y);
 
+            // Directional Fresnel - stronger on bottom/right edges (light from top-left)
+            float2 normalDir = normalize(p + 0.0001);
+            float directionalBias = max(0.0, dot(normalDir, normalize(float2(-0.3, -0.7))));
             float fresnel = pow(1.0 - clamp(abs(normalizedSdf) * 8.0, 0.0, 1.0), fresnelPower);
+            fresnel *= mix(0.7, 1.3, directionalBias);
             color = mix(color, half4(1.0), fresnel * 0.25);
 
+            // Edge glow with top bias
             float edgeSdf = abs(sdf);
             float edgeGlow = 1.0 - smoothstep(0.0, edgeWidth, edgeSdf);
             float topBias = smoothstep(0.0, 0.3, 1.0 - uv.y);
             color = mix(color, half4(1.0), edgeGlow * topBias * highlightIntensity * 0.4);
 
+            // Top highlight band
             float topHighlight = smoothstep(edgeWidth * 2.0, 0.0, sdf) *
                                  smoothstep(0.0, 0.15, uv.y) *
                                  smoothstep(0.15, 0.0, uv.y);
             color = mix(color, half4(1.0), topHighlight * highlightIntensity * 0.5);
+
+            // Specular hot-spot - elliptical highlight simulating point light from top-left
+            float2 specularCenter = float2(0.35, 0.22);
+            float2 specularAxes = float2(0.35, 0.2);
+            float2 specUV = (uv - specularCenter) / specularAxes;
+            float specDist = length(specUV);
+            float specular = exp(-specDist * specDist * 4.0) * specularIntensity;
+            color = mix(color, half4(1.0), specular);
+
+            // Subtle inner shadow at top edge
+            float innerShadow = smoothstep(edgeWidth * 3.0, 0.0, sdf) *
+                                smoothstep(0.0, 0.05, 1.0 - uv.y);
+            color = mix(color, half4(0.0, 0.0, 0.0, 1.0), innerShadow * 0.06);
 
             return color;
         }
@@ -81,7 +101,8 @@ object LiquidGlassShader {
         fresnelPower: Float = 3.0f,
         edgeWidth: Float = 3.0f,
         highlightIntensity: Float = 0.8f,
-        cornerRadius: Float = 20f
+        cornerRadius: Float = 20f,
+        specularIntensity: Float = 0.35f
     ) {
         shader.setFloatUniform("resolution", width, height)
         shader.setFloatUniform("refraction", refraction)
@@ -91,5 +112,6 @@ object LiquidGlassShader {
         shader.setFloatUniform("highlightIntensity", highlightIntensity)
         shader.setFloatUniform("lensCenter", width * 0.5f, height * 0.5f)
         shader.setFloatUniform("cornerRadius", cornerRadius)
+        shader.setFloatUniform("specularIntensity", specularIntensity)
     }
 }

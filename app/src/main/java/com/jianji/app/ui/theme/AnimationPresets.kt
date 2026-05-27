@@ -34,6 +34,11 @@ val iosSnappy = spring<Float>(
     stiffness = Spring.StiffnessHigh
 )
 
+val glassPressSpring = spring<Float>(
+    dampingRatio = 0.6f,
+    stiffness = 1000f
+)
+
 val iOSEaseInOut = tween<Float>(
     durationMillis = 350,
     easing = FastOutSlowInEasing
@@ -89,6 +94,23 @@ fun Modifier.iosPressEffect(onClick: () -> Unit): Modifier = composed {
         interactionSource = interactionSource,
         indication = null,
         onClick = onClick
+    )
+}
+
+fun Modifier.iosPressScale(
+    pressedScale: Float = 0.97f
+): Modifier = composed {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isPressed) pressedScale else 1f,
+        animationSpec = glassPressSpring,
+        label = "ios_press_scale"
+    )
+    this.scale(scale).clickable(
+        interactionSource = interactionSource,
+        indication = null,
+        onClick = {}
     )
 }
 

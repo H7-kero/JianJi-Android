@@ -1,27 +1,23 @@
 package com.jianji.app.ui.report
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jianji.app.ui.theme.GlassCard
 import com.jianji.app.ui.theme.GlassColors
 import com.jianji.app.ui.theme.LiquidGlassShapes
+import dev.chrisbanes.haze.HazeState
 
 @Composable
-fun ReportScreen(viewModel: ReportViewModel) {
+fun ReportScreen(viewModel: ReportViewModel, hazeState: HazeState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,31 +28,10 @@ fun ReportScreen(viewModel: ReportViewModel) {
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 4.dp,
-                    shape = LiquidGlassShapes.card,
-                    clip = false,
-                    ambientColor = GlassColors.glassShadow,
-                    spotColor = GlassColors.glassShadow
-                )
-                .clip(LiquidGlassShapes.card)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            GlassColors.glassHighlight,
-                            GlassColors.glassCardBackground
-                        )
-                    )
-                )
-                .border(
-                    width = 0.5.dp,
-                    color = Color.Black.copy(alpha = 0.06f),
-                    shape = LiquidGlassShapes.card
-                ),
-            contentAlignment = Alignment.Center
+        GlassCard(
+            hazeState = hazeState,
+            shape = LiquidGlassShapes.card,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
