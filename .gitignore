@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+preview-*.html
+test-report.html
+.superpowers/
